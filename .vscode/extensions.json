@@ -1,0 +1,58 @@
+/*
+ * @FileDesc: 推荐安装插件建议
+ */
+
+{
+    "recommendations": [
+        // Chinese 插件
+        "ms-ceintl.vscode-language-pack-zh-hans",
+        // Code Spell Checker 插件
+        "streetsidesoftware.code-spell-checker",
+        // comment tip 插件
+        "yuechaoxu.vscode-comment-tip",
+        // dir tree generator 插件
+        "openmynet.dir-tree-generator",
+        // Document This 插件
+        "oouo-diogo-perdigao.docthis",
+        // EditorConfig for VS Code 插件
+        "editorconfig.editorconfig",
+        // Error Lens 插件
+        "usernamehw.errorlens",
+        // ESLint 插件
+        "dbaeumer.vscode-eslint",
+        // ESLint Chinese Rules 插件
+        "maggie.eslint-rules-zh-plugin",
+        // git-commit-plugin 插件
+        "redjue.git-commit-plugin",
+        // GitHub Copilot 插件
+        "github.copilot",
+        // GitHub Copilot Chat 插件
+        "github.copilot-chat",
+        // GitLens 插件
+        "eamodio.gitlens",
+        // Import Cost 插件
+        "wix.vscode-import-cost",
+        // JavaScript (ES6) code snippets 插件
+        "xabikos.javascriptsnippets",
+        // koroFileHeader 插件
+        "obkoro1.korofileheader",
+        // Local History 插件
+        "xyz.local-history",
+        // markdownlint 插件
+        "davidanson.vscode-markdownlint",
+        // Postman 插件
+        "postman.postman-for-vscode",
+        // Prettier ESLint 插件
+        "rvest.vs-code-prettier-eslint",
+        // Prisma 插件
+        "prisma.prisma",
+        // Template String Converter 插件
+        "meganrogge.template-string-converter",
+        // Todo Highlight 插件
+        "wayou.vscode-todo-highlight",
+        // Todo Tree 插件
+        "gruntfuggly.todo-tree",
+        // Var Conversion 插件
+        "xiaoxintongxue.var-conv"
+    ]
+}
