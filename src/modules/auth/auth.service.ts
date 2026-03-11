@@ -2,7 +2,7 @@
  * @FileDesc: 认证服务
  */
 
-import { Inject, Injectable } from "@nestjs/common"
+import { forwardRef, Inject, Injectable } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
 import { Transactional } from "@nestjs-cls/transactional"
 import dayjs from "dayjs"
@@ -36,13 +36,7 @@ interface JwtPayload {
     exp: number
 }
 
-const {
-    PROD,
-    VITE_ACCESS_TOKEN_COOKIE_NAME,
-    VITE_REFRESH_TOKEN_COOKIE_NAME,
-    VITE_ACCESS_TOKEN_SECRET,
-    VITE_REFRESH_TOKEN_SECRET
-} = import.meta.env
+const { PROD, VITE_ACCESS_TOKEN_SECRET, VITE_REFRESH_TOKEN_SECRET } = import.meta.env
 
 /** 认证服务 */
 @Injectable()
@@ -61,8 +55,8 @@ export class AuthService {
     private readonly captchaService: CaptchaService
 
     /** CSRF 服务 */
-    @Inject(CsrfService)
-    private readonly csrfService: CsrfService
+    @Inject(forwardRef(() => CsrfService))
+    private readonly csrfService: TWrapper<CsrfService>
 
     /** 登录日志服务 */
     @Inject(LoginLogService)
@@ -75,6 +69,12 @@ export class AuthService {
     /** 用户服务 */
     @Inject(UserService)
     private readonly userService: UserService
+
+    /** 访问令牌 Cookie 名称 */
+    public readonly ACCESS_TOKEN_COOKIE_NAME: string = "access-token"
+
+    /** 刷新令牌 Cookie 名称 */
+    public readonly REFRESH_TOKEN_COOKIE_NAME: string = "refresh-token"
 
     /** Cookie 配置选项 */
     private readonly COOKIE_OPTIONS: CookieOptions = {
@@ -323,9 +323,9 @@ export class AuthService {
         // 清除 CSRF Token Cookie
         this.csrfService.clearCsrfToken(response)
         // 清除 访问令牌 Cookie
-        response.clearCookie(VITE_ACCESS_TOKEN_COOKIE_NAME, this.COOKIE_OPTIONS)
+        response.clearCookie(this.ACCESS_TOKEN_COOKIE_NAME, this.COOKIE_OPTIONS)
         // 清除 刷新令牌 Cookie
-        response.clearCookie(VITE_REFRESH_TOKEN_COOKIE_NAME, this.COOKIE_OPTIONS)
+        response.clearCookie(this.REFRESH_TOKEN_COOKIE_NAME, this.COOKIE_OPTIONS)
 
         this.logger.info("[logout] completed")
 
@@ -444,7 +444,7 @@ export class AuthService {
     private setAccessTokenCookie (request: Request, response: Response, accessToken: string): void {
 
         // 作用于 `getSessionIdentifier` 中将 访问令牌 与 CSRF Token 绑定
-        request.cookies[VITE_ACCESS_TOKEN_COOKIE_NAME] = accessToken
+        request.cookies[this.ACCESS_TOKEN_COOKIE_NAME] = accessToken
         // 生成并设置 CSRF Token
         this.csrfService.generateCsrfToken(request, response, {
             // 强制生成新 token，与 访问令牌 保持同步
@@ -452,7 +452,7 @@ export class AuthService {
         })
 
         // 设置访问令牌 Cookie
-        response.cookie(VITE_ACCESS_TOKEN_COOKIE_NAME, accessToken, this.COOKIE_OPTIONS)
+        response.cookie(this.ACCESS_TOKEN_COOKIE_NAME, accessToken, this.COOKIE_OPTIONS)
 
     }
 
@@ -465,7 +465,7 @@ export class AuthService {
      */
     private setRefreshTokenCookie (response: Response, refreshToken: string): void {
 
-        response.cookie(VITE_REFRESH_TOKEN_COOKIE_NAME, refreshToken, this.COOKIE_OPTIONS)
+        response.cookie(this.REFRESH_TOKEN_COOKIE_NAME, refreshToken, this.COOKIE_OPTIONS)
 
     }
 

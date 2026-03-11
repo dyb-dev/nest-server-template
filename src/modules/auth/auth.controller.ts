@@ -14,8 +14,6 @@ import type { SysUser } from "@/prisma/client"
 import type { Request, Response } from "express"
 import type { PinoLogger } from "nestjs-pino"
 
-const { VITE_REFRESH_TOKEN_COOKIE_NAME } = import.meta.env
-
 /** 认证控制器 */
 @Controller("auth")
 export class AuthController {
@@ -68,7 +66,7 @@ export class AuthController {
     ): Promise<void> {
 
         this.logger.info("[refreshTokens] started")
-        await this.authService.refreshTokens(request, response, cookies[VITE_REFRESH_TOKEN_COOKIE_NAME])
+        await this.authService.refreshTokens(request, response, cookies[this.authService.REFRESH_TOKEN_COOKIE_NAME])
         this.logger.info("[refreshTokens] completed")
 
     }
@@ -87,7 +85,7 @@ export class AuthController {
     ): Promise<void> {
 
         this.logger.info("[logout] started")
-        await this.authService.logout(response, cookies[VITE_REFRESH_TOKEN_COOKIE_NAME])
+        await this.authService.logout(response, cookies[this.authService.REFRESH_TOKEN_COOKIE_NAME])
         this.logger.info("[logout] completed")
 
     }

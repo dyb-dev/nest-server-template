@@ -26,12 +26,6 @@ interface ImportMetaEnv {
     readonly VITE_UPLOAD_PREFIX: string
     /** 端口号 默认: 3000 */
     readonly VITE_PORT: string
-    /** CSRF 令牌 Cookie 名称 默认: csrf-token */
-    readonly VITE_CSRF_TOKEN_COOKIE_NAME: string
-    /** 访问令牌 Cookie 名称 默认: access-token */
-    readonly VITE_ACCESS_TOKEN_COOKIE_NAME: string
-    /** 刷新令牌 Cookie 名称 默认: refresh-token */
-    readonly VITE_REFRESH_TOKEN_COOKIE_NAME: string
     /** CSRF 令牌密钥 */
     readonly VITE_CSRF_TOKEN_SECRET: string
     /** 访问令牌密钥 */

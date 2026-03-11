@@ -76,10 +76,10 @@ export class UserController {
      * 获取用户详情
      *
      * @param {GetDetailRequestDto} query 查询参数
-     * @returns {Promise<Omit<SysUser, "password" | "deletedAt"> | null>} 用户详情
+     * @returns {Promise<Omit<SysUser, "password" | "deletedAt">>} 用户详情
      */
     @Get("getDetail")
-    public async getDetail (@Query() query: GetDetailRequestDto): Promise<Omit<SysUser, "password" | "deletedAt"> | null> {
+    public async getDetail (@Query() query: GetDetailRequestDto): Promise<Omit<SysUser, "password" | "deletedAt">> {
 
         this.logger.info("[getDetail] started")
         const data = await this.userService.getDetail(query)

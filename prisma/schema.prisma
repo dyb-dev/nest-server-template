@@ -108,8 +108,7 @@ model SysDictItem {
 
     @@unique([typeId, label])
     @@unique([typeId, value])
-    @@index([label])
-    @@index([isActive])
+    @@index([typeId, isActive])
     @@index([typeId, sort])
     @@map("sys_dict_item")
 }

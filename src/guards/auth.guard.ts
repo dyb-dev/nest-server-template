@@ -45,7 +45,7 @@ export class AuthGuard implements CanActivate {
 
         const httpContext = context.switchToHttp()
         const request = httpContext.getRequest<Request>()
-        const accessToken = request.cookies[import.meta.env.VITE_ACCESS_TOKEN_COOKIE_NAME]
+        const accessToken = request.cookies[this.authService.ACCESS_TOKEN_COOKIE_NAME]
 
         if (!accessToken) {
 

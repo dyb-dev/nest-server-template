@@ -100,9 +100,9 @@ export class UserService {
      * 获取用户详情
      *
      * @param {GetDetailRequestDto} params 查询参数
-     * @returns {Promise<Omit<SysUser, "password" | "deletedAt"> | null>} 用户详情
+     * @returns {Promise<Omit<SysUser, "password" | "deletedAt">>} 用户详情
      */
-    public async getDetail (params: GetDetailRequestDto): Promise<Omit<SysUser, "password" | "deletedAt"> | null> {
+    public async getDetail (params: GetDetailRequestDto): Promise<Omit<SysUser, "password" | "deletedAt">> {
 
         this.logger.info("[getDetail] started")
 
@@ -117,6 +117,12 @@ export class UserService {
                 }
             }
         })
+
+        if (!data) {
+
+            throw new BusinessLogicException("用户不存在")
+
+        }
 
         this.logger.info("[getDetail] completed")
         return data
@@ -302,15 +308,17 @@ export class UserService {
 
         this.logger.info("[delete] started")
 
-        // 检查用户是否存在
         const user = await this.checkUserExists(params.id)
 
-        // 检查是否为系统用户
         if (user.isSystem) {
 
             throw new BusinessLogicException("系统用户不能删除")
 
         }
+
+        // TODO: SysUserRole、SysUserPost、SysLoginSession 软删除时一并删除
+        // SysLoginLog、SysOperationLog 保留
+        // SysDept.leaderId 置空
 
         await this.userRepository.softDeleteById(params.id)
 
@@ -333,20 +341,22 @@ export class UserService {
             where: { id: { in: params.ids } }
         })
 
-        // 检查 ID 是否都存在
         if (users.length !== params.ids.length) {
 
             throw new BusinessLogicException("部分用户不存在")
 
         }
 
-        // 检查是否包含系统用户
         const hasSystemUser = users.some(user => user.isSystem)
         if (hasSystemUser) {
 
             throw new BusinessLogicException("不能删除系统用户")
 
         }
+
+        // TODO: SysUserRole、SysUserPost、SysLoginSession 软删除时一并删除
+        // SysLoginLog、SysOperationLog 保留
+        // SysDept.leaderId 置空
 
         await this.userRepository.softDeleteMany({
             where: { id: { in: params.ids } }

@@ -2,7 +2,7 @@
  * @FileDesc: 认证模块
  */
 
-import { Module } from "@nestjs/common"
+import { forwardRef, Module } from "@nestjs/common"
 import { JwtModule } from "@nestjs/jwt"
 
 import { CaptchaModule, CsrfModule } from "../shared"
@@ -13,7 +13,7 @@ import { AuthService } from "./auth.service"
 
 /** 认证模块 */
 @Module({
-    imports: [JwtModule, CaptchaModule, CsrfModule, LoginLogModule, LoginSessionModule, UserModule],
+    imports: [JwtModule, CaptchaModule, forwardRef(() => CsrfModule), LoginLogModule, LoginSessionModule, UserModule],
     controllers: [AuthController],
     providers: [AuthService],
     exports: [AuthService]

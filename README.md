@@ -190,8 +190,6 @@ pnpm prisma:studio
 - [ ] 菜单管理模块（`MenuModule`）
 - [ ] 岗位管理模块（`PostModule`）
 - [ ] 通知公告模块（`NoticeModule`）
-- [ ] 字典管理模块（`DictModule`）
-- [ ] 参数配置模块（`ConfigModule`）
 - [ ] 定时任务模块（`JobModule`）
 
 ### 监控模块

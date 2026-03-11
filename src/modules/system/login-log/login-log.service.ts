@@ -87,7 +87,6 @@ export class LoginLogService {
             where: { id: { in: params.ids } }
         })
 
-        // 检查 ID 是否都存在
         if (count !== params.ids.length) {
 
             throw new BusinessLogicException("部分日志记录不存在")
