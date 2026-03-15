@@ -28,8 +28,6 @@ import type { TransactionalAdapterPrisma } from "@nestjs-cls/transactional-adapt
 import type { Request } from "express"
 import type { PinoLogger } from "nestjs-pino"
 
-export type WrapperType<T> = T
-
 /** 字典类型服务 */
 @Injectable()
 export class DictTypeService {

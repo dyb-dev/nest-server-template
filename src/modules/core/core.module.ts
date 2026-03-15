@@ -4,9 +4,7 @@
 
 import { HttpModule } from "@nestjs/axios"
 import { BullModule } from "@nestjs/bullmq"
-import { DiscoveryModule } from "@nestjs/core"
 import { EventEmitterModule } from "@nestjs/event-emitter"
-import { ScheduleModule } from "@nestjs/schedule"
 import { seconds, ThrottlerModule } from "@nestjs/throttler"
 import { ClsPluginTransactional } from "@nestjs-cls/transactional"
 import { TransactionalAdapterPrisma } from "@nestjs-cls/transactional-adapter-prisma"
@@ -33,9 +31,7 @@ export class CoreModule {
             module: CoreModule,
             imports: [
                 LoggerModule.forRoot(),
-                DiscoveryModule,
 
-                ScheduleModule.forRoot(),
                 EventEmitterModule.forRoot({
                     // 全局模块
                     global: true

@@ -113,7 +113,6 @@ export class ConfigService {
 
         const createData: Prisma.SysConfigCreateArgs["data"] = {
             ...params,
-            isSystem: false,
             createdBy: user?.username
         }
 

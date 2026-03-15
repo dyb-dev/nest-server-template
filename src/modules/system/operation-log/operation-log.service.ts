@@ -3,10 +3,11 @@
  */
 
 import { Inject, Injectable } from "@nestjs/common"
-import { Transactional } from "@nestjs-cls/transactional"
+import { Propagation, Transactional } from "@nestjs-cls/transactional"
 import dayjs from "dayjs"
 import { InjectPinoLogger } from "nestjs-pino"
 
+import { Job } from "@/decorators"
 import { PaginationResponseDto } from "@/dtos"
 import { BusinessLogicException } from "@/exceptions"
 
@@ -121,7 +122,7 @@ export class OperationLogService {
      * @param {Prisma.SysOperationLogCreateArgs["data"]} params 创建参数
      * @returns {Promise<void>}
      */
-    @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
+    @Transactional<TransactionalAdapterPrisma<DatabaseService>>(Propagation.RequiresNew)
     public async create (params: Prisma.SysOperationLogCreateArgs["data"]): Promise<void> {
 
         await this.operationLogRepository.create(params)
@@ -129,15 +130,14 @@ export class OperationLogService {
     }
 
     /**
-     * 删除已过期的操作日志（保留最近 90 天）
+     * 清理已过期的操作日志（保留最近 90 天）
      *
      * @returns {Promise<void>}
      */
+    @Job("operation-log:cleanup")
     @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
-    public async deleteExpiredOperationLog (): Promise<void> {
+    public async cleanup (): Promise<void> {
 
-        // TODO: 定时任务待标记
-        // 定时任务日志还未完成，先在这里标记一下
         const expiredAt = dayjs().subtract(90, "day").toDate()
 
         await this.operationLogRepository.deleteMany({

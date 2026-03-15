@@ -8,6 +8,10 @@ export * from "./config"
 export * from "./dict-item"
 /** 导出 字典类型模块 */
 export * from "./dict-type"
+/** 导出 定时任务模块 */
+export * from "./job"
+/** 导出 定时任务日志模块 */
+export * from "./job-log"
 /** 导出 登录日志模块 */
 export * from "./login-log"
 /** 导出 登录会话模块 */

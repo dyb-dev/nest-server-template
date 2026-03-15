@@ -6,6 +6,7 @@ import { Inject, Injectable } from "@nestjs/common"
 import { Transactional } from "@nestjs-cls/transactional"
 import { InjectPinoLogger } from "nestjs-pino"
 
+import { Job } from "@/decorators"
 import { PaginationResponseDto } from "@/dtos"
 import { BusinessLogicException } from "@/exceptions"
 
@@ -205,14 +206,14 @@ export class LoginSessionService {
     }
 
     /**
-     * 删除已过期的登录会话
+     * 清理已过期的登录会话
      *
      * @returns {Promise<void>}
      */
+    @Job("login-session:cleanup")
     @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
-    public async deleteExpiredLoginSession (): Promise<void> {
+    public async cleanup (): Promise<void> {
 
-        // TODO: 定时任务待标记
         await this.loginSessionRepository.deleteMany({
             where: {
                 expiresAt: { lt: new Date() }

@@ -1,5 +1,5 @@
 /*
- * @FileDesc: 登录日志服务
+ * @FileDesc: 定时任务日志服务
  */
 
 import { Inject, Injectable } from "@nestjs/common"
@@ -13,37 +13,37 @@ import { BusinessLogicException } from "@/exceptions"
 
 import { DatabaseService } from "../../core"
 
-import { BatchDeleteRequestDto, GetListRequestDto, GetPageListRequestDto } from "./login-log.dto"
-import { LoginLogRepository } from "./login-log.repository"
+import { BatchDeleteRequestDto, GetListRequestDto, GetPageListRequestDto } from "./job-log.dto"
+import { JobLogRepository } from "./job-log.repository"
 
-import type { SysLoginLog, Prisma } from "@/prisma/client"
+import type { SysJobLog, Prisma } from "@/prisma/client"
 import type { TransactionalAdapterPrisma } from "@nestjs-cls/transactional-adapter-prisma"
 import type { PinoLogger } from "nestjs-pino"
 
-/** 登录日志服务 */
+/** 定时任务日志服务 */
 @Injectable()
-export class LoginLogService {
+export class JobLogService {
 
     /** 日志记录器 */
-    @InjectPinoLogger(LoginLogService.name)
+    @InjectPinoLogger(JobLogService.name)
     private readonly logger: PinoLogger
 
-    /** 登录日志仓储 */
-    @Inject(LoginLogRepository)
-    private readonly loginLogRepository: LoginLogRepository
+    /** 定时任务日志仓储 */
+    @Inject(JobLogRepository)
+    private readonly jobLogRepository: JobLogRepository
 
     /**
-     * 获取登录日志列表
+     * 获取定时任务日志列表
      *
      * @param {GetListRequestDto} params 查询参数
-     * @returns {Promise<SysLoginLog[]>} 日志列表
+     * @returns {Promise<SysJobLog[]>} 日志列表
      */
-    public async getList (params: GetListRequestDto): Promise<SysLoginLog[]> {
+    public async getList (params: GetListRequestDto): Promise<SysJobLog[]> {
 
         this.logger.info("[getList] started")
 
         const where = this.buildQueryWhere(params)
-        const data = await this.loginLogRepository.findMany({ where })
+        const data = await this.jobLogRepository.findMany({ where })
 
         this.logger.info("[getList] completed")
         return data
@@ -51,12 +51,12 @@ export class LoginLogService {
     }
 
     /**
-     * 获取分页登录日志列表
+     * 获取分页定时任务日志列表
      *
      * @param {GetPageListRequestDto} params 查询参数
-     * @returns {Promise<PaginationResponseDto<SysLoginLog>>} 日志列表和总数
+     * @returns {Promise<PaginationResponseDto<SysJobLog>>} 日志列表和总数
      */
-    public async getPageList (params: GetPageListRequestDto): Promise<PaginationResponseDto<SysLoginLog>> {
+    public async getPageList (params: GetPageListRequestDto): Promise<PaginationResponseDto<SysJobLog>> {
 
         this.logger.info("[getPageList] started")
 
@@ -66,7 +66,7 @@ export class LoginLogService {
         const skip = (page - 1) * pageSize
         const take = pageSize
 
-        const data = await this.loginLogRepository.findManyByPage(skip, take, { where })
+        const data = await this.jobLogRepository.findManyByPage(skip, take, { where })
 
         this.logger.info("[getPageList] completed")
         return data
@@ -74,7 +74,7 @@ export class LoginLogService {
     }
 
     /**
-     * 批量删除登录日志
+     * 批量删除定时任务日志
      *
      * @param {BatchDeleteRequestDto} params 批量删除参数
      * @returns {Promise<void>}
@@ -84,7 +84,7 @@ export class LoginLogService {
 
         this.logger.info("[batchDelete] started")
 
-        const count = await this.loginLogRepository.count({
+        const count = await this.jobLogRepository.count({
             where: { id: { in: params.ids } }
         })
 
@@ -94,7 +94,7 @@ export class LoginLogService {
 
         }
 
-        await this.loginLogRepository.deleteMany({
+        await this.jobLogRepository.deleteMany({
             where: { id: { in: params.ids } }
         })
 
@@ -103,7 +103,7 @@ export class LoginLogService {
     }
 
     /**
-     * 删除所有登录日志
+     * 删除所有定时任务日志
      *
      * @returns {Promise<void>}
      */
@@ -111,38 +111,38 @@ export class LoginLogService {
     public async deleteAll (): Promise<void> {
 
         this.logger.info("[deleteAll] started")
-        await this.loginLogRepository.deleteMany()
+        await this.jobLogRepository.deleteMany()
         this.logger.info("[deleteAll] completed")
 
     }
 
     /**
-     * 创建登录日志
+     * 创建定时任务日志
      *
-     * @param {Prisma.SysLoginLogCreateArgs["data"]} params 创建参数
+     * @param {Prisma.SysJobLogCreateArgs["data"]} params 创建参数
      * @returns {Promise<void>}
      */
     @Transactional<TransactionalAdapterPrisma<DatabaseService>>(Propagation.RequiresNew)
-    public async create (params: Prisma.SysLoginLogCreateArgs["data"]): Promise<void> {
+    public async create (params: Prisma.SysJobLogCreateArgs["data"]): Promise<void> {
 
-        await this.loginLogRepository.create(params)
+        await this.jobLogRepository.create(params)
 
     }
 
     /**
-     * 清理已过期的登录日志（保留最近 30 天）
+     * 清理已过期的定时任务日志（保留最近 30 天）
      *
      * @returns {Promise<void>}
      */
-    @Job("login-log:cleanup")
+    @Job("job-log:cleanup")
     @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
     public async cleanup (): Promise<void> {
 
         const expiredAt = dayjs().subtract(30, "day").toDate()
 
-        await this.loginLogRepository.deleteMany({
+        await this.jobLogRepository.deleteMany({
             where: {
-                loginAt: { lt: expiredAt }
+                executedAt: { lt: expiredAt }
             }
         })
 
@@ -152,20 +152,20 @@ export class LoginLogService {
      * 构建查询条件
      *
      * @param {GetListRequestDto} params 查询参数
-     * @returns {Prisma.SysLoginLogWhereInput} 查询条件
+     * @returns {Prisma.SysJobLogWhereInput} 查询条件
      */
-    private buildQueryWhere (params: GetListRequestDto): Prisma.SysLoginLogWhereInput {
+    private buildQueryWhere (params: GetListRequestDto): Prisma.SysJobLogWhereInput {
 
-        const { ip, username, isSuccess, loginAtStart, loginAtEnd } = params
+        const { name, isSystem, isSuccess, executedAtStart, executedAtEnd } = params
 
         return {
-            ...ip && { ip: { contains: ip } },
-            ...username && { username: { contains: username } },
+            ...name && { name: { contains: name } },
+            ...isSystem !== void 0 && { isSystem },
             ...isSuccess !== void 0 && { isSuccess },
-            ...(loginAtStart || loginAtEnd) && {
-                loginAt: {
-                    ...loginAtStart && { gte: new Date(loginAtStart) },
-                    ...loginAtEnd && { lte: new Date(loginAtEnd) }
+            ...(executedAtStart || executedAtEnd) && {
+                executedAt: {
+                    ...executedAtStart && { gte: new Date(executedAtStart) },
+                    ...executedAtEnd && { lte: new Date(executedAtEnd) }
                 }
             }
         }

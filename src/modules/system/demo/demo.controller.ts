@@ -9,7 +9,6 @@ import { InjectQueue } from "@nestjs/bullmq"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Controller, Post, Inject, Get, Sse, Scope, Body, StreamableFile } from "@nestjs/common"
 import { EventEmitter2, OnEvent } from "@nestjs/event-emitter"
-import { Cron, CronExpression, Timeout } from "@nestjs/schedule"
 import { InjectPinoLogger } from "nestjs-pino"
 import { interval, map } from "rxjs"
 
@@ -162,8 +161,6 @@ implements OnModuleInit, OnApplicationBootstrap, OnModuleDestroy, BeforeApplicat
      * @returns {Promise<GetPostsResponseDto>} 获取帖子 响应 DTO
      */
     @Get("getPosts")
-    @Timeout(5000)
-    @Cron(CronExpression.EVERY_DAY_AT_8AM)
     public async getPosts (): Promise<GetPostsResponseDto> {
 
         this.logger.info("[getPosts] started")

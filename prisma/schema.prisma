@@ -118,9 +118,9 @@ model SysJob {
     /// 任务ID
     id             Int      @id @default(autoincrement())
     /// 名称
-    name           String   @db.VarChar(100)
+    name           String   @unique @db.VarChar(100)
     /// 调用目标字符串
-    invokeTarget   String   @db.VarChar(100)
+    invokeTarget   String   @unique @db.VarChar(100)
     /// Cron表达式
     cronExpression String   @map("cron_expression") @db.VarChar(100)
     /// 是否系统任务
@@ -140,7 +140,6 @@ model SysJob {
 
     jobLogs SysJobLog[]
 
-    @@index([name])
     @@index([isSystem])
     @@index([isActive])
     @@map("sys_job")

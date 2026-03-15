@@ -2,8 +2,6 @@
  * @FileDesc: 认证模块
  */
 
-/** 导出 认证控制器 */
-export * from "./auth.controller"
 /** 导出 认证模块 */
 export * from "./auth.module"
 /** 导出 认证服务 */
