@@ -249,7 +249,7 @@ model SysDept {
     id        Int      @id @default(autoincrement())
     /// 父级部门ID
     parentId  Int?     @map("parent_id")
-    /// 祖级列表
+    /// 祖级列表（逗号分隔）格式: 1,2,3
     ancestors String   @default("") @db.VarChar(50)
     /// 名称
     name      String   @db.VarChar(30)
@@ -370,8 +370,8 @@ model SysRole {
     roleDepts SysRoleDept[]
     roleMenus SysRoleMenu[]
 
+    @@unique([name, deletedAt])
     @@unique([code, deletedAt])
-    @@index([name, deletedAt])
     @@index([isActive, deletedAt])
     @@index([createdAt, deletedAt])
     @@index([deletedAt])
@@ -634,7 +634,6 @@ model SysNotice {
     @@index([title])
     @@index([type])
     @@index([isActive])
-    @@index([createdAt])
     @@map("sys_notice")
 }
 

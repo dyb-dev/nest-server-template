@@ -2,7 +2,7 @@
  * @FileDesc: 用户服务
  */
 
-import { Inject, Injectable } from "@nestjs/common"
+import { forwardRef, Inject, Injectable } from "@nestjs/common"
 import { Transactional } from "@nestjs-cls/transactional"
 import { hash, compare } from "bcrypt"
 import { InjectPinoLogger } from "nestjs-pino"
@@ -11,6 +11,12 @@ import { PaginationResponseDto } from "@/dtos"
 import { BusinessLogicException } from "@/exceptions"
 
 import { DatabaseService } from "../../core"
+import { DeptService } from "../dept"
+import { LoginSessionService } from "../login-session"
+import { PostService } from "../post"
+import { RoleService } from "../role"
+import { UserPostService } from "../user-post"
+import { UserRoleService } from "../user-role"
 
 import {
     CreateRequestDto,
@@ -43,6 +49,30 @@ export class UserService {
     @Inject(UserRepository)
     private readonly userRepository: UserRepository
 
+    /** 登录会话服务 */
+    @Inject(LoginSessionService)
+    private readonly loginSessionService: LoginSessionService
+
+    /** 部门服务 */
+    @Inject(forwardRef(() => DeptService))
+    private readonly deptService: TWrapper<DeptService>
+
+    /** 岗位服务 */
+    @Inject(PostService)
+    private readonly postService: PostService
+
+    /** 用户岗位服务 */
+    @Inject(UserPostService)
+    private readonly userPostService: UserPostService
+
+    /** 角色服务 */
+    @Inject(RoleService)
+    private readonly roleService: RoleService
+
+    /** 用户角色服务 */
+    @Inject(UserRoleService)
+    private readonly userRoleService: UserRoleService
+
     /**
      * 获取用户列表
      *
@@ -57,7 +87,9 @@ export class UserService {
         const data = await this.userRepository.findMany({
             where,
             include: {
-                dept: true
+                dept: {
+                    select: { id: true, name: true }
+                }
             }
         })
 
@@ -87,7 +119,9 @@ export class UserService {
         const data = await this.userRepository.findManyByPage(skip, take, {
             where,
             include: {
-                dept: true
+                dept: {
+                    select: { id: true, name: true }
+                }
             }
         })
 
@@ -108,12 +142,22 @@ export class UserService {
 
         const data = await this.userRepository.findById(params.id, {
             include: {
-                dept: true,
+                dept: {
+                    select: { id: true, name: true }
+                },
                 userRoles: {
-                    include: { role: true }
+                    select: {
+                        role: {
+                            select: { id: true, name: true, code: true }
+                        }
+                    }
                 },
                 userPosts: {
-                    include: { post: true }
+                    select: {
+                        post: {
+                            select: { id: true, name: true, code: true }
+                        }
+                    }
                 }
             }
         })
@@ -155,15 +199,26 @@ export class UserService {
 
         }
 
+        if (params.deptId) {
+
+            await this.checkDeptExists(params.deptId)
+
+        }
+
         const hashedPassword = await this.hashPassword(params.password)
 
+        const { postIds, roleIds, ...restParams } = params
+
         const createData: Prisma.SysUserCreateArgs["data"] = {
-            ...params,
+            ...restParams,
             password: hashedPassword,
             createdBy: user?.username
         }
 
-        await this.userRepository.create(createData)
+        const createdUser = await this.userRepository.create(createData)
+
+        await this.checkAndSetPostsByUserId(createdUser.id, postIds)
+        await this.checkAndSetRolesByUserId(createdUser.id, roleIds)
 
         this.logger.info("[create] completed")
 
@@ -195,10 +250,19 @@ export class UserService {
 
         }
 
-        const { id, ...updateData } = params
+        if (params.deptId && params.deptId !== existingUser.deptId) {
+
+            await this.checkDeptExists(params.deptId)
+
+        }
+
+        const { id, postIds, roleIds, ...restUpdateData } = params
+
+        await this.checkAndSetPostsByUserId(id, postIds)
+        await this.checkAndSetRolesByUserId(id, roleIds)
 
         await this.userRepository.updateById(id, {
-            ...updateData,
+            ...restUpdateData,
             updatedBy: user?.username
         })
 
@@ -316,9 +380,12 @@ export class UserService {
 
         }
 
-        // TODO: SysUserRole、SysUserPost、SysLoginSession 软删除时一并删除
-        // SysLoginLog、SysOperationLog 保留
-        // SysDept.leaderId 置空
+        await Promise.all([
+            this.userRoleService.deleteByUserIds([params.id]),
+            this.userPostService.deleteByUserIds([params.id]),
+            this.loginSessionService.deleteByUserIds([params.id]),
+            this.deptService.clearLeaderByUserIds([params.id])
+        ])
 
         await this.userRepository.softDeleteById(params.id)
 
@@ -354,9 +421,12 @@ export class UserService {
 
         }
 
-        // TODO: SysUserRole、SysUserPost、SysLoginSession 软删除时一并删除
-        // SysLoginLog、SysOperationLog 保留
-        // SysDept.leaderId 置空
+        await Promise.all([
+            this.userRoleService.deleteByUserIds(params.ids),
+            this.userPostService.deleteByUserIds(params.ids),
+            this.loginSessionService.deleteByUserIds(params.ids),
+            this.deptService.clearLeaderByUserIds(params.ids)
+        ])
 
         await this.userRepository.softDeleteMany({
             where: { id: { in: params.ids } }
@@ -384,6 +454,36 @@ export class UserService {
 
         this.logger.info("[findByUsername] completed")
         return data
+
+    }
+
+    /**
+     * 根据ID校验用户是否存在
+     *
+     * @param {number} id 用户ID
+     * @returns {Promise<boolean>} 是否存在
+     */
+    public async existsById (id: number): Promise<boolean> {
+
+        this.logger.info("[existsById] started")
+        const exists = await this.userRepository.existsById(id)
+        this.logger.info("[existsById] completed")
+        return exists
+
+    }
+
+    /**
+     * 根据部门ID校验该部门下是否存在用户
+     *
+     * @param {number} deptId 部门ID
+     * @returns {Promise<boolean>} 是否存在
+     */
+    public async existsByDeptId (deptId: number): Promise<boolean> {
+
+        this.logger.info("[existsByDeptId] started")
+        const exists = await this.userRepository.exists({ deptId })
+        this.logger.info("[existsByDeptId] completed")
+        return exists
 
     }
 
@@ -504,6 +604,84 @@ export class UserService {
             throw new BusinessLogicException("手机号已存在")
 
         }
+
+    }
+
+    /**
+     * 检查部门是否存在
+     *
+     * @param {number} deptId 部门ID
+     * @returns {Promise<void>}
+     * @throws {BusinessLogicException} 部门不存在时抛出异常
+     */
+    private async checkDeptExists (deptId: number): Promise<void> {
+
+        const exists = await this.deptService.existsByIds([deptId])
+        if (!exists) {
+
+            throw new BusinessLogicException("部门不存在")
+
+        }
+
+    }
+
+    /**
+     * 检查并设置用户岗位关联
+     *
+     * @param {number} userId 用户ID
+     * @param {number[]} [postIds] 岗位ID数组
+     * @returns {Promise<void>}
+     */
+    private async checkAndSetPostsByUserId (userId: number, postIds?: number[]): Promise<void> {
+
+        if (!postIds) {
+
+            return
+
+        }
+
+        if (postIds.length > 0) {
+
+            const allExists = await this.postService.existsByIds(postIds)
+            if (!allExists) {
+
+                throw new BusinessLogicException("部分岗位不存在")
+
+            }
+
+        }
+
+        await this.userPostService.setPostsByUserId(userId, postIds)
+
+    }
+
+    /**
+     * 检查并设置用户角色关联
+     *
+     * @param {number} userId 用户ID
+     * @param {number[]} [roleIds] 角色ID数组
+     * @returns {Promise<void>}
+     */
+    private async checkAndSetRolesByUserId (userId: number, roleIds?: number[]): Promise<void> {
+
+        if (!roleIds) {
+
+            return
+
+        }
+
+        if (roleIds.length > 0) {
+
+            const allExists = await this.roleService.existsByIds(roleIds)
+            if (!allExists) {
+
+                throw new BusinessLogicException("部分角色不存在")
+
+            }
+
+        }
+
+        await this.userRoleService.setRolesByUserId(userId, roleIds)
 
     }
 

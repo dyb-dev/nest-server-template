@@ -96,17 +96,17 @@ export class LoginSessionService {
     }
 
     /**
-     * 根据 userId 删除该用户下的所有登录会话
+     * 根据用户ID数组删除所有登录会话
      *
-     * @param {number} userId 用户ID
+     * @param {number[]} userIds 用户ID数组
      * @returns {Promise<void>}
      */
     @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
-    public async deleteByUserId (userId: number): Promise<void> {
+    public async deleteByUserIds (userIds: number[]): Promise<void> {
 
-        this.logger.info("[deleteByUserId] started")
-        await this.loginSessionRepository.deleteMany({ where: { userId } })
-        this.logger.info("[deleteByUserId] completed")
+        this.logger.info("[deleteByUserIds] started")
+        await this.loginSessionRepository.deleteMany({ where: { userId: { in: userIds } } })
+        this.logger.info("[deleteByUserIds] completed")
 
     }
 

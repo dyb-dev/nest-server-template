@@ -156,8 +156,8 @@ export class AuthService {
                 this.generateRefreshToken(user.id, user.username, refreshTokenExpiresAt.unix())
             ])
 
-            // 清除该用户所有登录会话记录（确保单设备在线）
-            await this.loginSessionService.deleteByUserId(user.id)
+            // 删除该用户所有登录会话记录（确保单设备在线）
+            await this.loginSessionService.deleteByUserIds([user.id])
 
             // 创建登录会话记录
             await this.loginSessionService.create({

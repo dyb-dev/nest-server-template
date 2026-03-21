@@ -106,14 +106,23 @@ export class UserBaseDto {
     @IsOptional()
     deptId?: number
 
+    /** 岗位ID数组 */
+    @IsInt({ each: true, message: "岗位ID必须是整数" })
+    @IsArray({ message: "岗位ID必须是数组" })
+    @IsOptional()
+    postIds?: number[]
+
+    /** 角色ID数组 */
+    @IsInt({ each: true, message: "角色ID必须是整数" })
+    @IsArray({ message: "角色ID必须是数组" })
+    @IsOptional()
+    roleIds?: number[]
+
     /** 备注 */
     @MaxLength(500, { message: "备注最多500个字符" })
     @IsString({ message: "备注必须是字符串" })
     @IsOptional()
     remark?: string
-
-    // TODO: 修改 还需添加部门、岗位、角色，逻辑层可能也需要改
-    // 在更新 用户表 和 部门表 的时候，对于 deptId 和 leaderId 进行判断，部门的负责人必须要在当前部门下
 
 }
 
