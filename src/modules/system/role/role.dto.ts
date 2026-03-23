@@ -159,3 +159,50 @@ export class BatchDeleteRequestDto {
     ids: number[]
 
 }
+
+/** 获取角色已绑定用户分页列表 请求 DTO */
+export class GetBoundUserPageListRequestDto extends PaginationRequestDto {
+
+    /** 角色ID */
+    @IsInt({ message: "角色ID必须是整数" })
+    @Type(() => Number)
+    roleId: number
+
+    /** 用户名 */
+    @IsString({ message: "用户名必须是字符串" })
+    @IsOptional()
+    username?: string
+
+    /** 手机号 */
+    @IsString({ message: "手机号必须是字符串" })
+    @IsOptional()
+    phone?: string
+
+}
+
+/** 获取角色未绑定用户分页列表 请求 DTO */
+export class GetUnboundUserPageListRequestDto extends GetBoundUserPageListRequestDto {}
+
+/** 批量绑定用户 请求 DTO */
+export class BatchBindUserRequestDto extends PickType(GetBoundUserPageListRequestDto, ["roleId"]) {
+
+    /** 用户ID数组 */
+    @IsInt({ each: true, message: "用户ID必须是整数" })
+    @ArrayMinSize(1, { message: "至少选择一个用户" })
+    @IsArray({ message: "用户ID必须是数组" })
+    userIds: number[]
+
+}
+
+/** 解绑用户 请求 DTO */
+export class UnbindUserRequestDto extends PickType(GetBoundUserPageListRequestDto, ["roleId"]) {
+
+    /** 用户ID */
+    @IsInt({ message: "用户ID必须是整数" })
+    @Type(() => Number)
+    userId: number
+
+}
+
+/** 批量解绑用户 请求 DTO */
+export class BatchUnbindUserRequestDto extends BatchBindUserRequestDto {}

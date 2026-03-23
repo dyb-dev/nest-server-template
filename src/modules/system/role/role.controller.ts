@@ -17,11 +17,16 @@ import {
     UpdateStatusRequestDto,
     UpdateDataScopeRequestDto,
     DeleteRequestDto,
-    BatchDeleteRequestDto
+    BatchDeleteRequestDto,
+    GetBoundUserPageListRequestDto,
+    GetUnboundUserPageListRequestDto,
+    BatchBindUserRequestDto,
+    UnbindUserRequestDto,
+    BatchUnbindUserRequestDto
 } from "./role.dto"
 import { RoleService } from "./role.service"
 
-import type { SysRole } from "@/prisma/client"
+import type { SysRole, SysUser } from "@/prisma/client"
 import type { Request } from "express"
 import type { PinoLogger } from "nestjs-pino"
 
@@ -176,6 +181,87 @@ export class RoleController {
         this.logger.info("[batchDelete] started")
         await this.roleService.batchDelete(body)
         this.logger.info("[batchDelete] completed")
+
+    }
+
+    /**
+     * 获取角色已绑定用户分页列表
+     *
+     * @param {GetBoundUserPageListRequestDto} query 查询参数
+     * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
+     */
+    @Get("getBoundUserPageList")
+    public async getBoundUserPageList (
+        @Query() query: GetBoundUserPageListRequestDto
+    ): Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>> {
+
+        this.logger.info("[getBoundUserPageList] started")
+        const data = await this.roleService.getBoundUserPageList(query)
+        this.logger.info("[getBoundUserPageList] completed")
+        return data
+
+    }
+
+    /**
+     * 获取角色未绑定用户分页列表
+     *
+     * @param {GetUnboundUserPageListRequestDto} query 查询参数
+     * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
+     */
+    @Get("getUnboundUserPageList")
+    public async getUnboundUserPageList (
+        @Query() query: GetUnboundUserPageListRequestDto
+    ): Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>> {
+
+        this.logger.info("[getUnboundUserPageList] started")
+        const data = await this.roleService.getUnboundUserPageList(query)
+        this.logger.info("[getUnboundUserPageList] completed")
+        return data
+
+    }
+
+    /**
+     * 批量绑定用户
+     *
+     * @param {BatchBindUserRequestDto} body 请求体
+     * @returns {Promise<void>}
+     */
+    @Post("batchBindUser")
+    public async batchBindUser (@Body() body: BatchBindUserRequestDto): Promise<void> {
+
+        this.logger.info("[batchBindUser] started")
+        await this.roleService.batchBindUser(body)
+        this.logger.info("[batchBindUser] completed")
+
+    }
+
+    /**
+     * 解绑用户
+     *
+     * @param {UnbindUserRequestDto} body 请求体
+     * @returns {Promise<void>}
+     */
+    @Post("unbindUser")
+    public async unbindUser (@Body() body: UnbindUserRequestDto): Promise<void> {
+
+        this.logger.info("[unbindUser] started")
+        await this.roleService.unbindUser(body)
+        this.logger.info("[unbindUser] completed")
+
+    }
+
+    /**
+     * 批量解绑用户
+     *
+     * @param {BatchUnbindUserRequestDto} body 请求体
+     * @returns {Promise<void>}
+     */
+    @Post("batchUnbindUser")
+    public async batchUnbindUser (@Body() body: BatchUnbindUserRequestDto): Promise<void> {
+
+        this.logger.info("[batchUnbindUser] started")
+        await this.roleService.batchUnbindUser(body)
+        this.logger.info("[batchUnbindUser] completed")
 
     }
 

@@ -12,6 +12,7 @@ import { BusinessLogicException } from "@/exceptions"
 import { DatabaseService } from "../../core"
 import { DeptService } from "../dept"
 import { RoleDeptService } from "../role-dept"
+import { UserService } from "../user"
 import { UserRoleService } from "../user-role"
 
 import {
@@ -23,11 +24,16 @@ import {
     UpdateStatusRequestDto,
     UpdateDataScopeRequestDto,
     DeleteRequestDto,
-    BatchDeleteRequestDto
+    BatchDeleteRequestDto,
+    GetBoundUserPageListRequestDto,
+    GetUnboundUserPageListRequestDto,
+    BatchBindUserRequestDto,
+    UnbindUserRequestDto,
+    BatchUnbindUserRequestDto
 } from "./role.dto"
 import { RoleRepository } from "./role.repository"
 
-import type { SysRole, Prisma, SysRoleDataScope } from "@/prisma/client"
+import type { SysRole, SysUser, Prisma, SysRoleDataScope } from "@/prisma/client"
 import type { TransactionalAdapterPrisma } from "@nestjs-cls/transactional-adapter-prisma"
 import type { Request } from "express"
 import type { PinoLogger } from "nestjs-pino"
@@ -55,6 +61,10 @@ export class RoleService {
     /** 用户角色服务 */
     @Inject(UserRoleService)
     private readonly userRoleService: UserRoleService
+
+    /** 用户服务 */
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: TWrapper<UserService>
 
     /**
      * 获取角色列表
@@ -284,6 +294,133 @@ export class RoleService {
         })
 
         this.logger.info("[batchDelete] completed")
+
+    }
+
+    /**
+     * 获取角色已绑定用户分页列表
+     *
+     * @param {GetBoundUserPageListRequestDto} params 查询参数
+     * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
+     */
+    public async getBoundUserPageList (
+        params: GetBoundUserPageListRequestDto
+    ): Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>> {
+
+        this.logger.info("[getBoundUserPageList] started")
+
+        await this.checkRoleExists(params.roleId)
+
+        const data = await this.userService.getBoundPageListByRoleId(params)
+
+        this.logger.info("[getBoundUserPageList] completed")
+        return data
+
+    }
+
+    /**
+     * 获取角色未绑定用户分页列表
+     *
+     * @param {GetUnboundUserPageListRequestDto} params 查询参数
+     * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
+     */
+    public async getUnboundUserPageList (
+        params: GetUnboundUserPageListRequestDto
+    ): Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>> {
+
+        this.logger.info("[getUnboundUserPageList] started")
+
+        await this.checkRoleExists(params.roleId)
+
+        const data = await this.userService.getUnboundPageListByRoleId(params)
+
+        this.logger.info("[getUnboundUserPageList] completed")
+        return data
+
+    }
+
+    /**
+     * 批量绑定用户
+     *
+     * @param {BatchBindUserRequestDto} params 批量绑定用户参数
+     * @returns {Promise<void>}
+     */
+    @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
+    public async batchBindUser (params: BatchBindUserRequestDto): Promise<void> {
+
+        this.logger.info("[batchBindUser] started")
+
+        await this.checkRoleExists(params.roleId)
+
+        const allExists = await this.userService.existsByIds(params.userIds)
+        if (!allExists) {
+
+            throw new BusinessLogicException("部分用户不存在")
+
+        }
+
+        const boundUserIds = await this.userRoleService.findUserIdsByRoleId(params.roleId, params.userIds)
+        if (boundUserIds.length > 0) {
+
+            throw new BusinessLogicException("部分用户已绑定此角色")
+
+        }
+
+        await this.userRoleService.createUsersByRoleId(params.roleId, params.userIds)
+
+        this.logger.info("[batchBindUser] completed")
+
+    }
+
+    /**
+     * 解绑用户
+     *
+     * @param {UnbindUserRequestDto} params 解绑用户参数
+     * @returns {Promise<void>}
+     */
+    @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
+    public async unbindUser (params: UnbindUserRequestDto): Promise<void> {
+
+        this.logger.info("[unbindUser] started")
+
+        await this.checkRoleExists(params.roleId)
+
+        const bound = await this.userRoleService.existsByRoleIdAndUserId(params.roleId, params.userId)
+        if (!bound) {
+
+            throw new BusinessLogicException("该用户未绑定此角色")
+
+        }
+
+        await this.userRoleService.deleteUsersByRoleId(params.roleId, [params.userId])
+
+        this.logger.info("[unbindUser] completed")
+
+    }
+
+    /**
+     * 批量解绑用户
+     *
+     * @param {BatchUnbindUserRequestDto} params 批量解绑用户参数
+     * @returns {Promise<void>}
+     */
+    @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
+    public async batchUnbindUser (params: BatchUnbindUserRequestDto): Promise<void> {
+
+        this.logger.info("[batchUnbindUser] started")
+
+        await this.checkRoleExists(params.roleId)
+
+        const boundUserIds = await this.userRoleService.findUserIdsByRoleId(params.roleId, params.userIds)
+        if (boundUserIds.length !== params.userIds.length) {
+
+            throw new BusinessLogicException("部分用户未绑定此角色")
+
+        }
+
+        await this.userRoleService.deleteUsersByRoleId(params.roleId, params.userIds)
+
+        this.logger.info("[batchUnbindUser] completed")
 
     }
 

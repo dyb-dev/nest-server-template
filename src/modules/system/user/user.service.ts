@@ -66,8 +66,8 @@ export class UserService {
     private readonly userPostService: UserPostService
 
     /** 角色服务 */
-    @Inject(RoleService)
-    private readonly roleService: RoleService
+    @Inject(forwardRef(() => RoleService))
+    private readonly roleService: TWrapper<RoleService>
 
     /** 用户角色服务 */
     @Inject(UserRoleService)
@@ -458,17 +458,17 @@ export class UserService {
     }
 
     /**
-     * 根据ID校验用户是否存在
+     * 根据ID数组校验用户是否全部存在
      *
-     * @param {number} id 用户ID
-     * @returns {Promise<boolean>} 是否存在
+     * @param {number[]} ids 用户ID数组
+     * @returns {Promise<boolean>} 是否全部存在
      */
-    public async existsById (id: number): Promise<boolean> {
+    public async existsByIds (ids: number[]): Promise<boolean> {
 
-        this.logger.info("[existsById] started")
-        const exists = await this.userRepository.existsById(id)
-        this.logger.info("[existsById] completed")
-        return exists
+        this.logger.info("[existsByIds] started")
+        const count = await this.userRepository.count({ where: { id: { in: ids } } })
+        this.logger.info("[existsByIds] completed")
+        return count === ids.length
 
     }
 
@@ -484,6 +484,82 @@ export class UserService {
         const exists = await this.userRepository.exists({ deptId })
         this.logger.info("[existsByDeptId] completed")
         return exists
+
+    }
+
+    /**
+     * 获取角色已绑定用户分页列表
+     *
+     * @param {object} params 查询参数
+     * @param {number} params.roleId 角色ID
+     * @param {string} [params.username] 用户名
+     * @param {string} [params.phone] 手机号
+     * @param {number} params.page 页码
+     * @param {number} params.pageSize 每页数量
+     * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
+     */
+    public async getBoundPageListByRoleId (params: {
+        roleId: number
+        username?: string
+        phone?: string
+        page: number
+        pageSize: number
+    }): Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>> {
+
+        this.logger.info("[getBoundPageListByRoleId] started")
+
+        const { roleId, username, phone, page, pageSize } = params
+        const skip = (page - 1) * pageSize
+        const take = pageSize
+
+        const data = await this.userRepository.findManyByPage(skip, take, {
+            where: {
+                ...username && { username: { contains: username } },
+                ...phone && { phone: { contains: phone } },
+                userRoles: { some: { roleId } }
+            }
+        })
+
+        this.logger.info("[getBoundPageListByRoleId] completed")
+        return data
+
+    }
+
+    /**
+     * 获取角色未绑定用户分页列表
+     *
+     * @param {object} params 查询参数
+     * @param {number} params.roleId 角色ID
+     * @param {string} [params.username] 用户名
+     * @param {string} [params.phone] 手机号
+     * @param {number} params.page 页码
+     * @param {number} params.pageSize 每页数量
+     * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
+     */
+    public async getUnboundPageListByRoleId (params: {
+        roleId: number
+        username?: string
+        phone?: string
+        page: number
+        pageSize: number
+    }): Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>> {
+
+        this.logger.info("[getUnboundPageListByRoleId] started")
+
+        const { roleId, username, phone, page, pageSize } = params
+        const skip = (page - 1) * pageSize
+        const take = pageSize
+
+        const data = await this.userRepository.findManyByPage(skip, take, {
+            where: {
+                ...username && { username: { contains: username } },
+                ...phone && { phone: { contains: phone } },
+                userRoles: { none: { roleId } }
+            }
+        })
+
+        this.logger.info("[getUnboundPageListByRoleId] completed")
+        return data
 
     }
 

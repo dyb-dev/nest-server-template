@@ -337,7 +337,7 @@ export class DeptService {
      */
     private async checkLeaderExists (leaderId: number): Promise<void> {
 
-        const exists = await this.userService.existsById(leaderId)
+        const exists = await this.userService.existsByIds([leaderId])
         if (!exists) {
 
             throw new BusinessLogicException("负责人不存在")

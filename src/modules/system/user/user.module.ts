@@ -17,7 +17,14 @@ import { UserService } from "./user.service"
 
 /** 用户模块 */
 @Module({
-    imports: [LoginSessionModule, forwardRef(() => DeptModule), PostModule, UserPostModule, RoleModule, UserRoleModule],
+    imports: [
+        LoginSessionModule,
+        forwardRef(() => DeptModule),
+        PostModule,
+        UserPostModule,
+        forwardRef(() => RoleModule),
+        UserRoleModule
+    ],
     controllers: [UserController],
     providers: [UserRepository, UserService],
     exports: [UserService]

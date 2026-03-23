@@ -22,6 +22,42 @@ export class UserRoleService {
     private readonly userRoleRepository: UserRoleRepository
 
     /**
+     * 根据角色ID查询已创建的用户ID列表（可指定范围过滤）
+     *
+     * @param {number} roleId 角色ID
+     * @param {number[]} [userIds] 过滤的用户ID范围
+     * @returns {Promise<number[]>} 用户ID列表
+     */
+    public async findUserIdsByRoleId (roleId: number, userIds?: number[]): Promise<number[]> {
+
+        this.logger.info("[findUserIdsByRoleId] started")
+        const list = await this.userRoleRepository.findMany({
+            where: {
+                roleId,
+                ...userIds && { userId: { in: userIds } }
+            }
+        })
+        this.logger.info("[findUserIdsByRoleId] completed")
+        return list.map(item => item.userId)
+
+    }
+
+    /**
+     * 批量创建用户到角色
+     *
+     * @param {number} roleId 角色ID
+     * @param {number[]} userIds 用户ID数组
+     * @returns {Promise<void>}
+     */
+    public async createUsersByRoleId (roleId: number, userIds: number[]): Promise<void> {
+
+        this.logger.info("[createUsersByRoleId] started")
+        await this.userRoleRepository.createMany(userIds.map(userId => ({ roleId, userId })))
+        this.logger.info("[createUsersByRoleId] completed")
+
+    }
+
+    /**
      * 设置用户角色关联
      *
      * @param {number} userId 用户ID
@@ -66,6 +102,37 @@ export class UserRoleService {
         this.logger.info("[deleteByUserIds] started")
         await this.userRoleRepository.deleteMany({ where: { userId: { in: userIds } } })
         this.logger.info("[deleteByUserIds] completed")
+
+    }
+
+    /**
+     * 批量删除角色下的用户
+     *
+     * @param {number} roleId 角色ID
+     * @param {number[]} userIds 用户ID数组
+     * @returns {Promise<void>}
+     */
+    public async deleteUsersByRoleId (roleId: number, userIds: number[]): Promise<void> {
+
+        this.logger.info("[deleteUsersByRoleId] started")
+        await this.userRoleRepository.deleteMany({ where: { roleId, userId: { in: userIds } } })
+        this.logger.info("[deleteUsersByRoleId] completed")
+
+    }
+
+    /**
+     * 校验单个用户与角色的绑定关系是否存在
+     *
+     * @param {number} roleId 角色ID
+     * @param {number} userId 用户ID
+     * @returns {Promise<boolean>} 是否存在绑定关系
+     */
+    public async existsByRoleIdAndUserId (roleId: number, userId: number): Promise<boolean> {
+
+        this.logger.info("[existsByRoleIdAndUserId] started")
+        const exists = await this.userRoleRepository.exists({ roleId, userId })
+        this.logger.info("[existsByRoleIdAndUserId] completed")
+        return exists
 
     }
 
