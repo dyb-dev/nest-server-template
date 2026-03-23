@@ -22,6 +22,21 @@ export class RoleDeptService {
     private readonly roleDeptRepository: RoleDeptRepository
 
     /**
+     * 根据角色ID数组查询所有绑定的部门ID数组
+     *
+     * @param {number[]} roleIds 角色ID数组
+     * @returns {Promise<number[]>} 部门ID数组
+     */
+    public async findDeptIdsByRoleIds (roleIds: number[]): Promise<number[]> {
+
+        this.logger.info("[findDeptIdsByRoleIds] started")
+        const list = await this.roleDeptRepository.findMany({ where: { roleId: { in: roleIds } } })
+        this.logger.info("[findDeptIdsByRoleIds] completed")
+        return list.map(item => item.deptId)
+
+    }
+
+    /**
      * 设置角色部门关联
      *
      * @param {number} roleId 角色ID
@@ -42,6 +57,20 @@ export class RoleDeptService {
     }
 
     /**
+     * 根据角色ID数组删除所有部门关联
+     *
+     * @param {number[]} roleIds 角色ID数组
+     * @returns {Promise<void>}
+     */
+    public async deleteByRoleIds (roleIds: number[]): Promise<void> {
+
+        this.logger.info("[deleteByRoleIds] started")
+        await this.roleDeptRepository.deleteMany({ where: { roleId: { in: roleIds } } })
+        this.logger.info("[deleteByRoleIds] completed")
+
+    }
+
+    /**
      * 根据部门ID校验是否存在角色绑定
      *
      * @param {number} deptId 部门ID
@@ -53,20 +82,6 @@ export class RoleDeptService {
         const exists = await this.roleDeptRepository.exists({ deptId })
         this.logger.info("[existsByDeptId] completed")
         return exists
-
-    }
-
-    /**
-     * 根据角色ID数组删除所有部门关联
-     *
-     * @param {number[]} roleIds 角色ID数组
-     * @returns {Promise<void>}
-     */
-    public async deleteByRoleIds (roleIds: number[]): Promise<void> {
-
-        this.logger.info("[deleteByRoleIds] started")
-        await this.roleDeptRepository.deleteMany({ where: { roleId: { in: roleIds } } })
-        this.logger.info("[deleteByRoleIds] completed")
 
     }
 

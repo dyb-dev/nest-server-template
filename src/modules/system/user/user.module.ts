@@ -8,6 +8,7 @@ import { DeptModule } from "../dept"
 import { LoginSessionModule } from "../login-session"
 import { PostModule } from "../post"
 import { RoleModule } from "../role"
+import { RoleDeptModule } from "../role-dept"
 import { UserPostModule } from "../user-post"
 import { UserRoleModule } from "../user-role"
 
@@ -23,7 +24,8 @@ import { UserService } from "./user.service"
         PostModule,
         UserPostModule,
         forwardRef(() => RoleModule),
-        UserRoleModule
+        UserRoleModule,
+        RoleDeptModule
     ],
     controllers: [UserController],
     providers: [UserRepository, UserService],

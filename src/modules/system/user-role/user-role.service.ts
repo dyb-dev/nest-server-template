@@ -22,11 +22,26 @@ export class UserRoleService {
     private readonly userRoleRepository: UserRoleRepository
 
     /**
-     * 根据角色ID查询已创建的用户ID列表（可指定范围过滤）
+     * 根据用户ID查询该用户所有角色ID数组
+     *
+     * @param {number} userId 用户ID
+     * @returns {Promise<number[]>} 角色ID数组
+     */
+    public async findRoleIdsByUserId (userId: number): Promise<number[]> {
+
+        this.logger.info("[findRoleIdsByUserId] started")
+        const list = await this.userRoleRepository.findMany({ where: { userId } })
+        this.logger.info("[findRoleIdsByUserId] completed")
+        return list.map(item => item.roleId)
+
+    }
+
+    /**
+     * 根据角色ID查询已创建的用户ID数组（可指定范围过滤）
      *
      * @param {number} roleId 角色ID
      * @param {number[]} [userIds] 过滤的用户ID范围
-     * @returns {Promise<number[]>} 用户ID列表
+     * @returns {Promise<number[]>} 用户ID数组
      */
     public async findUserIdsByRoleId (roleId: number, userIds?: number[]): Promise<number[]> {
 

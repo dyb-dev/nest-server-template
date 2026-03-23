@@ -42,6 +42,20 @@ export class UserPostService {
     }
 
     /**
+     * 根据用户ID数组删除所有岗位关联
+     *
+     * @param {number[]} userIds 用户ID数组
+     * @returns {Promise<void>}
+     */
+    public async deleteByUserIds (userIds: number[]): Promise<void> {
+
+        this.logger.info("[deleteByUserIds] started")
+        await this.userPostRepository.deleteMany({ where: { userId: { in: userIds } } })
+        this.logger.info("[deleteByUserIds] completed")
+
+    }
+
+    /**
      * 根据岗位ID数组校验是否存在用户绑定
      *
      * @param {number[]} postIds 岗位ID数组
@@ -53,20 +67,6 @@ export class UserPostService {
         const exists = await this.userPostRepository.exists({ postId: { in: postIds } })
         this.logger.info("[existsByPostIds] completed")
         return exists
-
-    }
-
-    /**
-     * 根据用户ID数组删除所有岗位关联
-     *
-     * @param {number[]} userIds 用户ID数组
-     * @returns {Promise<void>}
-     */
-    public async deleteByUserIds (userIds: number[]): Promise<void> {
-
-        this.logger.info("[deleteByUserIds] started")
-        await this.userPostRepository.deleteMany({ where: { userId: { in: userIds } } })
-        this.logger.info("[deleteByUserIds] completed")
 
     }
 

@@ -42,13 +42,17 @@ export class UserController {
      * 获取用户列表
      *
      * @param {GetListRequestDto} query 查询参数
+     * @param {Request["user"]} user 当前用户
      * @returns {Promise<Omit<SysUser, "password" | "deletedAt">[]>} 用户列表
      */
     @Get("getList")
-    public async getList (@Query() query: GetListRequestDto): Promise<Omit<SysUser, "password" | "deletedAt">[]> {
+    public async getList (
+        @Query() query: GetListRequestDto,
+        @User() user: Request["user"]
+    ): Promise<Omit<SysUser, "password" | "deletedAt">[]> {
 
         this.logger.info("[getList] started")
-        const data = await this.userService.getList(query)
+        const data = await this.userService.getList(query, user)
         this.logger.info("[getList] completed")
         return data
 
@@ -58,15 +62,17 @@ export class UserController {
      * 获取分页用户列表
      *
      * @param {GetPageListRequestDto} query 查询参数
+     * @param {Request["user"]} user 当前用户
      * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
      */
     @Get("getPageList")
     public async getPageList (
-        @Query() query: GetPageListRequestDto
+        @Query() query: GetPageListRequestDto,
+        @User() user: Request["user"]
     ): Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>> {
 
         this.logger.info("[getPageList] started")
-        const data = await this.userService.getPageList(query)
+        const data = await this.userService.getPageList(query, user)
         this.logger.info("[getPageList] completed")
         return data
 

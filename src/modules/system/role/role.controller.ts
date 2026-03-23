@@ -188,15 +188,17 @@ export class RoleController {
      * 获取角色已绑定用户分页列表
      *
      * @param {GetBoundUserPageListRequestDto} query 查询参数
+     * @param {Request["user"]} user 当前用户
      * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
      */
     @Get("getBoundUserPageList")
     public async getBoundUserPageList (
-        @Query() query: GetBoundUserPageListRequestDto
+        @Query() query: GetBoundUserPageListRequestDto,
+        @User() user: Request["user"]
     ): Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>> {
 
         this.logger.info("[getBoundUserPageList] started")
-        const data = await this.roleService.getBoundUserPageList(query)
+        const data = await this.roleService.getBoundUserPageList(query, user)
         this.logger.info("[getBoundUserPageList] completed")
         return data
 
@@ -206,15 +208,17 @@ export class RoleController {
      * 获取角色未绑定用户分页列表
      *
      * @param {GetUnboundUserPageListRequestDto} query 查询参数
+     * @param {Request["user"]} user 当前用户
      * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
      */
     @Get("getUnboundUserPageList")
     public async getUnboundUserPageList (
-        @Query() query: GetUnboundUserPageListRequestDto
+        @Query() query: GetUnboundUserPageListRequestDto,
+        @User() user: Request["user"]
     ): Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>> {
 
         this.logger.info("[getUnboundUserPageList] started")
-        const data = await this.roleService.getUnboundUserPageList(query)
+        const data = await this.roleService.getUnboundUserPageList(query, user)
         this.logger.info("[getUnboundUserPageList] completed")
         return data
 

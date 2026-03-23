@@ -234,17 +234,23 @@ export class DeptService {
     }
 
     /**
-     * 根据ID数组校验部门是否全部存在
+     * 根据部门ID查询该部门及所有子孙部门的ID数组
      *
-     * @param {number[]} ids 部门ID数组
-     * @returns {Promise<boolean>} 是否全部存在
+     * @param {number} deptId 部门ID
+     * @returns {Promise<number[]>} 部门ID数组
      */
-    public async existsByIds (ids: number[]): Promise<boolean> {
+    public async findDeptAndBelowIds (deptId: number): Promise<number[]> {
 
-        this.logger.info("[existsByIds] started")
-        const count = await this.deptRepository.count({ where: { id: { in: ids } } })
-        this.logger.info("[existsByIds] completed")
-        return count === ids.length
+        this.logger.info("[findDeptAndBelowIds] started")
+
+        const depts = await this.deptRepository.findMany({
+            where: {
+                OR: [{ id: deptId }, { ancestors: { contains: String(deptId) } }]
+            }
+        })
+
+        this.logger.info("[findDeptAndBelowIds] completed")
+        return depts.map(d => d.id)
 
     }
 
@@ -259,6 +265,21 @@ export class DeptService {
         this.logger.info("[clearLeaderByUserIds] started")
         await this.deptRepository.updateMany({ leaderId: null }, { where: { leaderId: { in: userIds } } })
         this.logger.info("[clearLeaderByUserIds] completed")
+
+    }
+
+    /**
+     * 根据ID数组校验部门是否全部存在
+     *
+     * @param {number[]} ids 部门ID数组
+     * @returns {Promise<boolean>} 是否全部存在
+     */
+    public async existsByIds (ids: number[]): Promise<boolean> {
+
+        this.logger.info("[existsByIds] started")
+        const count = await this.deptRepository.count({ where: { id: { in: ids } } })
+        this.logger.info("[existsByIds] completed")
+        return count === ids.length
 
     }
 
@@ -410,7 +431,7 @@ export class DeptService {
             }
         })
 
-        if (descendants.length <= 0) {
+        if (descendants.length === 0) {
 
             return
 

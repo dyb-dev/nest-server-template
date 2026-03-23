@@ -101,7 +101,6 @@ export class LoginSessionService {
      * @param {number[]} userIds 用户ID数组
      * @returns {Promise<void>}
      */
-    @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
     public async deleteByUserIds (userIds: number[]): Promise<void> {
 
         this.logger.info("[deleteByUserIds] started")
@@ -116,7 +115,6 @@ export class LoginSessionService {
      * @param {Prisma.SysLoginSessionCreateArgs["data"]} params 创建参数
      * @returns {Promise<void>}
      */
-    @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
     public async create (params: Prisma.SysLoginSessionCreateArgs["data"]): Promise<void> {
 
         this.logger.info("[create] started")
@@ -167,7 +165,6 @@ export class LoginSessionService {
      * @param {string} params.refreshToken 新的刷新令牌
      * @returns {Promise<void>}
      */
-    @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
     public async updateRefreshToken (params: { id: number; refreshToken: string }): Promise<void> {
 
         this.logger.info("[updateRefreshToken] started")
@@ -190,7 +187,6 @@ export class LoginSessionService {
      * @param {string} refreshToken 刷新令牌
      * @returns {Promise<void>}
      */
-    @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
     public async deleteByRefreshToken (refreshToken: string): Promise<void> {
 
         this.logger.info("[deleteByRefreshToken] started")

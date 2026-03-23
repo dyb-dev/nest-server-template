@@ -301,17 +301,19 @@ export class RoleService {
      * 获取角色已绑定用户分页列表
      *
      * @param {GetBoundUserPageListRequestDto} params 查询参数
+     * @param {Request["user"]} user 当前用户
      * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
      */
     public async getBoundUserPageList (
-        params: GetBoundUserPageListRequestDto
+        params: GetBoundUserPageListRequestDto,
+        user: Request["user"]
     ): Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>> {
 
         this.logger.info("[getBoundUserPageList] started")
 
         await this.checkRoleExists(params.roleId)
 
-        const data = await this.userService.getBoundPageListByRoleId(params)
+        const data = await this.userService.findBoundUserPageListByRoleId(params, user)
 
         this.logger.info("[getBoundUserPageList] completed")
         return data
@@ -322,17 +324,19 @@ export class RoleService {
      * 获取角色未绑定用户分页列表
      *
      * @param {GetUnboundUserPageListRequestDto} params 查询参数
+     * @param {Request["user"]} user 当前用户
      * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
      */
     public async getUnboundUserPageList (
-        params: GetUnboundUserPageListRequestDto
+        params: GetUnboundUserPageListRequestDto,
+        user: Request["user"]
     ): Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>> {
 
         this.logger.info("[getUnboundUserPageList] started")
 
         await this.checkRoleExists(params.roleId)
 
-        const data = await this.userService.getUnboundPageListByRoleId(params)
+        const data = await this.userService.findUnboundUserPageListByRoleId(params, user)
 
         this.logger.info("[getUnboundUserPageList] completed")
         return data
@@ -421,6 +425,21 @@ export class RoleService {
         await this.userRoleService.deleteUsersByRoleId(params.roleId, params.userIds)
 
         this.logger.info("[batchUnbindUser] completed")
+
+    }
+
+    /**
+     * 根据角色ID数组查询角色列表
+     *
+     * @param {number[]} ids 角色ID数组
+     * @returns {Promise<Omit<SysRole, "deletedAt">[]>} 角色列表
+     */
+    public async findByIds (ids: number[]): Promise<Omit<SysRole, "deletedAt">[]> {
+
+        this.logger.info("[findByIds] started")
+        const data = await this.roleRepository.findMany({ where: { id: { in: ids } } })
+        this.logger.info("[findByIds] completed")
+        return data
 
     }
 
