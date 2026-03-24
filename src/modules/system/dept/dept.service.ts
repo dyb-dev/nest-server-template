@@ -164,7 +164,7 @@ export class DeptService {
 
         if (parentIdChanged || nameChanged) {
 
-            await this.checkDeptNameNotExists(parentId, params.name, params.id)
+            await this.checkDeptNameNotExists(parentId, params.name)
 
         }
 
@@ -330,15 +330,13 @@ export class DeptService {
      *
      * @param {number | null} [parentId] 父级部门ID
      * @param {string} name 部门名称
-     * @param {number} [excludeId] 排除的部门ID
      * @returns {Promise<void>}
      */
-    private async checkDeptNameNotExists (parentId: number | null, name: string, excludeId?: number): Promise<void> {
+    private async checkDeptNameNotExists (parentId: number | null, name: string): Promise<void> {
 
         const exists = await this.deptRepository.exists({
             parentId,
-            name,
-            ...excludeId && { id: { not: excludeId } }
+            name
         })
 
         if (exists) {

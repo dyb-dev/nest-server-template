@@ -183,15 +183,6 @@ pnpm prisma:studio
 
 ## 📝 待办事项
 
-### 系统模块
-
-- [ ] 部门管理模块（`DeptModule`）
-- [ ] 角色管理模块（`RoleModule`）
-- [ ] 菜单管理模块（`MenuModule`）
-- [ ] 岗位管理模块（`PostModule`）
-- [ ] 通知公告模块（`NoticeModule`）
-- [ ] 定时任务模块（`JobModule`）
-
 ### 监控模块
 
 - [ ] 服务监控模块（CPU、内存、服务器、磁盘信息）

@@ -91,14 +91,17 @@ export class CreateRequestDto {
     @IsOptional()
     isActive?: boolean
 
+    /** 菜单ID集合 */
+    @IsInt({ each: true, message: "菜单ID必须是整数" })
+    @IsArray({ message: "菜单ID必须是数组" })
+    @IsOptional()
+    menuIds?: number[]
+
     /** 备注 */
     @MaxLength(500, { message: "备注最多500个字符" })
     @IsString({ message: "备注必须是字符串" })
     @IsOptional()
     remark?: string
-
-    // TODO: 菜单ID集合，待 SysMenu 模块生成后完善
-    // menuIds?: number[]
 
 }
 

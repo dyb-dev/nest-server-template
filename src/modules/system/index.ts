@@ -18,6 +18,8 @@ export * from "./job-log"
 export * from "./login-log"
 /** 导出 登录会话模块 */
 export * from "./login-session"
+/** 导出 菜单模块 */
+export * from "./menu"
 /** 导出 通知公告模块 */
 export * from "./notice"
 /** 导出 操作日志模块 */
@@ -28,6 +30,8 @@ export * from "./post"
 export * from "./role"
 /** 导出 角色部门模块 */
 export * from "./role-dept"
+/** 导出 角色菜单模块 */
+export * from "./role-menu"
 /** 导出 用户模块 */
 export * from "./user"
 /** 导出 用户岗位模块 */

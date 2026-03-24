@@ -11,7 +11,9 @@ import { BusinessLogicException } from "@/exceptions"
 
 import { DatabaseService } from "../../core"
 import { DeptService } from "../dept"
+import { MenuService } from "../menu"
 import { RoleDeptService } from "../role-dept"
+import { RoleMenuService } from "../role-menu"
 import { UserService } from "../user"
 import { UserRoleService } from "../user-role"
 
@@ -58,13 +60,21 @@ export class RoleService {
     @Inject(RoleDeptService)
     private readonly roleDeptService: RoleDeptService
 
+    /** 用户服务 */
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: TWrapper<UserService>
+
     /** 用户角色服务 */
     @Inject(UserRoleService)
     private readonly userRoleService: UserRoleService
 
-    /** 用户服务 */
-    @Inject(forwardRef(() => UserService))
-    private readonly userService: TWrapper<UserService>
+    /** 菜单服务 */
+    @Inject(MenuService)
+    private readonly menuService: MenuService
+
+    /** 角色菜单服务 */
+    @Inject(RoleMenuService)
+    private readonly roleMenuService: RoleMenuService
 
     /**
      * 获取角色列表
@@ -139,14 +149,16 @@ export class RoleService {
         await this.checkNameNotExists(params.name)
         await this.checkCodeNotExists(params.code)
 
+        const { menuIds, ...restParams } = params
+
         const createData: Prisma.SysRoleCreateArgs["data"] = {
-            ...params,
+            ...restParams,
             createdBy: user?.username
         }
 
-        await this.roleRepository.create(createData)
+        const createdRole = await this.roleRepository.create(createData)
 
-        // TODO: 待 SysMenu 模块生成后，处理菜单ID集合（SysRoleMenu）的关联逻辑
+        await this.checkAndSetMenusByRoleId(createdRole.id, menuIds)
 
         this.logger.info("[create] completed")
 
@@ -178,14 +190,14 @@ export class RoleService {
 
         }
 
-        const { id, ...updateData } = params
+        const { id, menuIds, ...updateData } = params
+
+        await this.checkAndSetMenusByRoleId(id, menuIds)
 
         await this.roleRepository.updateById(id, {
             ...updateData,
             updatedBy: user?.username
         })
-
-        // TODO: 待 SysMenu 模块生成后，处理菜单ID集合（SysRoleMenu）的关联逻辑
 
         this.logger.info("[update] completed")
 
@@ -254,9 +266,11 @@ export class RoleService {
 
         await this.checkRoleExists(params.id)
 
-        await Promise.all([this.roleDeptService.deleteByRoleIds([params.id]), this.userRoleService.deleteByRoleIds([params.id])])
-
-        // TODO: 软删除时，SysRoleMenu 关联数据一并处理
+        await Promise.all([
+            this.roleDeptService.deleteByRoleIds([params.id]),
+            this.roleMenuService.deleteByRoleIds([params.id]),
+            this.userRoleService.deleteByRoleIds([params.id])
+        ])
 
         await this.roleRepository.softDeleteById(params.id)
 
@@ -285,9 +299,11 @@ export class RoleService {
 
         }
 
-        await Promise.all([this.roleDeptService.deleteByRoleIds(params.ids), this.userRoleService.deleteByRoleIds(params.ids)])
-
-        // TODO: 软删除时，SysRoleMenu 关联数据一并处理
+        await Promise.all([
+            this.roleDeptService.deleteByRoleIds(params.ids),
+            this.roleMenuService.deleteByRoleIds(params.ids),
+            this.userRoleService.deleteByRoleIds(params.ids)
+        ])
 
         await this.roleRepository.softDeleteMany({
             where: { id: { in: params.ids } }
@@ -572,6 +588,36 @@ export class RoleService {
         }
 
         await this.roleDeptService.setDeptsByRoleId(roleId, deptIds)
+
+    }
+
+    /**
+     * 检查并设置角色菜单关联
+     *
+     * @param {number} roleId 角色ID
+     * @param {number[]} [menuIds] 菜单ID数组
+     * @returns {Promise<void>}
+     */
+    private async checkAndSetMenusByRoleId (roleId: number, menuIds?: number[]): Promise<void> {
+
+        if (!menuIds) {
+
+            return
+
+        }
+
+        if (menuIds.length > 0) {
+
+            const allExists = await this.menuService.existsByIds(menuIds)
+            if (!allExists) {
+
+                throw new BusinessLogicException("部分菜单不存在")
+
+            }
+
+        }
+
+        await this.roleMenuService.setMenusByRoleId(roleId, menuIds)
 
     }
 

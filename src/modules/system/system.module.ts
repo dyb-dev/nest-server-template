@@ -12,11 +12,13 @@ import { JobModule } from "./job"
 import { JobLogModule } from "./job-log"
 import { LoginLogModule } from "./login-log"
 import { LoginSessionModule } from "./login-session"
+import { MenuModule } from "./menu"
 import { NoticeModule } from "./notice"
 import { OperationLogModule } from "./operation-log"
 import { PostModule } from "./post"
 import { RoleModule } from "./role"
 import { RoleDeptModule } from "./role-dept"
+import { RoleMenuModule } from "./role-menu"
 import { UserModule } from "./user"
 import { UserPostModule } from "./user-post"
 import { UserRoleModule } from "./user-role"
@@ -39,7 +41,9 @@ import { UserRoleModule } from "./user-role"
         UserPostModule,
         RoleModule,
         RoleDeptModule,
-        UserRoleModule
+        UserRoleModule,
+        MenuModule,
+        RoleMenuModule
     ],
     exports: [
         LoginLogModule,
@@ -57,7 +61,9 @@ import { UserRoleModule } from "./user-role"
         UserPostModule,
         RoleModule,
         RoleDeptModule,
-        UserRoleModule
+        UserRoleModule,
+        MenuModule,
+        RoleMenuModule
     ]
 })
 export class SystemModule {}
