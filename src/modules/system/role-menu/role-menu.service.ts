@@ -22,6 +22,21 @@ export class RoleMenuService {
     private readonly roleMenuRepository: RoleMenuRepository
 
     /**
+     * 根据角色ID数组查询所有菜单ID数组
+     *
+     * @param {number[]} roleIds 角色ID数组
+     * @returns {Promise<number[]>} 菜单ID数组
+     */
+    public async findMenuIdsByRoleIds (roleIds: number[]): Promise<number[]> {
+
+        this.logger.info("[findMenuIdsByRoleIds] started")
+        const list = await this.roleMenuRepository.findMany({ where: { roleId: { in: roleIds } } })
+        this.logger.info("[findMenuIdsByRoleIds] completed")
+        return list.map(item => item.menuId)
+
+    }
+
+    /**
      * 设置角色菜单关联
      *
      * @param {number} roleId 角色ID

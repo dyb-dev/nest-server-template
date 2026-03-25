@@ -24,6 +24,9 @@ export class GetListRequestDto {
 
 }
 
+/** 获取部门树 请求 DTO */
+export class GetTreeRequestDto extends GetListRequestDto {}
+
 /** 创建部门 请求 DTO */
 export class CreateRequestDto {
 

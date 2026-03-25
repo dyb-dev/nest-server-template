@@ -7,7 +7,14 @@ import { InjectPinoLogger } from "nestjs-pino"
 
 import { User } from "@/decorators"
 
-import { CreateRequestDto, UpdateRequestDto, GetListRequestDto, GetDetailRequestDto, DeleteRequestDto } from "./dept.dto"
+import {
+    GetListRequestDto,
+    GetTreeRequestDto,
+    GetDetailRequestDto,
+    CreateRequestDto,
+    UpdateRequestDto,
+    DeleteRequestDto
+} from "./dept.dto"
 import { DeptService } from "./dept.service"
 
 import type { SysDept } from "@/prisma/client"
@@ -38,6 +45,24 @@ export class DeptController {
         this.logger.info("[getList] started")
         const data = await this.deptService.getList(query)
         this.logger.info("[getList] completed")
+        return data
+
+    }
+
+    /**
+     * 获取部门树
+     *
+     * @param {GetTreeRequestDto} query 查询参数
+     * @returns {Promise<(Omit<SysDept, "deletedAt"> & { children: Omit<SysDept, "deletedAt">[] })[]>} 部门树
+     */
+    @Get("getTree")
+    public async getTree (
+        @Query() query: GetTreeRequestDto
+    ): Promise<(Omit<SysDept, "deletedAt"> & { children: Omit<SysDept, "deletedAt">[] })[]> {
+
+        this.logger.info("[getTree] started")
+        const data = await this.deptService.getTree(query)
+        this.logger.info("[getTree] completed")
         return data
 
     }

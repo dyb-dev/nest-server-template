@@ -12,7 +12,14 @@ import { DatabaseService } from "../../core"
 import { RoleDeptService } from "../role-dept"
 import { UserService } from "../user"
 
-import { CreateRequestDto, UpdateRequestDto, GetListRequestDto, GetDetailRequestDto, DeleteRequestDto } from "./dept.dto"
+import {
+    GetListRequestDto,
+    GetTreeRequestDto,
+    GetDetailRequestDto,
+    CreateRequestDto,
+    UpdateRequestDto,
+    DeleteRequestDto
+} from "./dept.dto"
 import { DeptRepository } from "./dept.repository"
 
 import type { SysDept, Prisma } from "@/prisma/client"
@@ -55,6 +62,28 @@ export class DeptService {
 
         this.logger.info("[getList] completed")
         return data
+
+    }
+
+    /**
+     * 获取部门树
+     *
+     * @param {GetTreeRequestDto} params 查询参数
+     * @returns {Promise<(Omit<SysDept, "deletedAt"> & { children: Omit<SysDept, "deletedAt">[] })[]>} 部门树
+     */
+    public async getTree (
+        params: GetTreeRequestDto
+    ): Promise<(Omit<SysDept, "deletedAt"> & { children: Omit<SysDept, "deletedAt">[] })[]> {
+
+        this.logger.info("[getTree] started")
+
+        const where = this.buildQueryWhere(params)
+        const data = await this.deptRepository.findMany({ where })
+
+        const tree = this.buildTree(data)
+
+        this.logger.info("[getTree] completed")
+        return tree
 
     }
 
@@ -297,6 +326,27 @@ export class DeptService {
             ...name && { name: { contains: name } },
             ...isActive !== void 0 && { isActive }
         }
+
+    }
+
+    /**
+     * 将部门列表构建为树结构
+     *
+     * @param {Omit<SysDept, "deletedAt">[]} depts 部门列表
+     * @param {number | null} parentId 父级部门ID
+     * @returns {(Omit<SysDept, "deletedAt"> & { children: Omit<SysDept, "deletedAt">[] })[]} 部门树
+     */
+    private buildTree (
+        depts: Omit<SysDept, "deletedAt">[],
+        parentId: number | null = null
+    ): (Omit<SysDept, "deletedAt"> & { children: Omit<SysDept, "deletedAt">[] })[] {
+
+        return depts
+            .filter(dept => dept.parentId === parentId)
+            .map(dept => ({
+                ...dept,
+                children: this.buildTree(depts, dept.id)
+            }))
 
     }
 

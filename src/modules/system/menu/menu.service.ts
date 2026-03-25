@@ -11,8 +11,16 @@ import { SysMenuType } from "@/prisma/client"
 
 import { DatabaseService } from "../../core"
 import { RoleMenuService } from "../role-menu"
+import { UserRoleService } from "../user-role"
 
-import { GetListRequestDto, GetDetailRequestDto, CreateRequestDto, UpdateRequestDto, DeleteRequestDto } from "./menu.dto"
+import {
+    GetListRequestDto,
+    GetDetailRequestDto,
+    CreateRequestDto,
+    UpdateRequestDto,
+    DeleteRequestDto,
+    GetTreeRequestDto
+} from "./menu.dto"
 import { MenuRepository } from "./menu.repository"
 
 import type { SysMenu, Prisma } from "@/prisma/client"
@@ -36,21 +44,49 @@ export class MenuService {
     @Inject(RoleMenuService)
     private readonly roleMenuService: RoleMenuService
 
+    /** 用户角色服务 */
+    @Inject(UserRoleService)
+    private readonly userRoleService: UserRoleService
+
     /**
      * 获取菜单列表
      *
      * @param {GetListRequestDto} params 查询参数
+     * @param {Request["user"]} user 当前用户
      * @returns {Promise<SysMenu[]>} 菜单列表
      */
-    public async getList (params: GetListRequestDto): Promise<SysMenu[]> {
+    public async getList (params: GetListRequestDto, user: Request["user"]): Promise<SysMenu[]> {
 
         this.logger.info("[getList] started")
 
         const where = this.buildQueryWhere(params)
         const data = await this.menuRepository.findMany({ where })
+        const filtered = await this.filterMenusByUserId(user?.id, data)
 
         this.logger.info("[getList] completed")
-        return data
+        return filtered
+
+    }
+
+    /**
+     * 获取菜单树
+     *
+     * @param {GetTreeRequestDto} params 查询参数
+     * @param {Request["user"]} user 当前用户
+     * @returns {Promise<(SysMenu & { children: SysMenu[] })[]>} 菜单树
+     */
+    public async getTree (params: GetTreeRequestDto, user: Request["user"]): Promise<(SysMenu & { children: SysMenu[] })[]> {
+
+        this.logger.info("[getTree] started")
+
+        const where = this.buildQueryWhere(params)
+        const data = await this.menuRepository.findMany({ where })
+        const filtered = await this.filterMenusByUserId(user?.id, data)
+
+        const tree = this.buildTree(filtered)
+
+        this.logger.info("[getTree] completed")
+        return tree
 
     }
 
@@ -228,6 +264,52 @@ export class MenuService {
             ...name && { name: { contains: name } },
             ...isActive !== void 0 && { isActive }
         }
+
+    }
+
+    /**
+     * 根据用户ID过滤有权限的菜单列表
+     *
+     * @param {number | void} userId 用户ID
+     * @param {SysMenu[]} menus 待过滤的菜单列表
+     * @returns {Promise<SysMenu[]>} 过滤后的菜单列表
+     */
+    private async filterMenusByUserId (userId: number | void, menus: SysMenu[]): Promise<SysMenu[]> {
+
+        if (!userId) {
+
+            return []
+
+        }
+
+        const roleIds = await this.userRoleService.findRoleIdsByUserId(userId)
+        if (roleIds.length === 0) {
+
+            return []
+
+        }
+
+        const menuIds = await this.roleMenuService.findMenuIdsByRoleIds(roleIds)
+        const allowedMenuIdSet = new Set(menuIds)
+        return menus.filter(menu => allowedMenuIdSet.has(menu.id))
+
+    }
+
+    /**
+     * 将菜单列表构建为树结构
+     *
+     * @param {SysMenu[]} menus 菜单列表
+     * @param {number | null} parentId 父级菜单ID
+     * @returns {(SysMenu & { children: SysMenu[] })[]} 菜单树
+     */
+    private buildTree (menus: SysMenu[], parentId: number | null = null): (SysMenu & { children: SysMenu[] })[] {
+
+        return menus
+            .filter(menu => menu.parentId === parentId)
+            .map(menu => ({
+                ...menu,
+                children: this.buildTree(menus, menu.id)
+            }))
 
     }
 

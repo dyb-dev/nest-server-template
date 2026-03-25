@@ -29,6 +29,12 @@ import { IsPassword } from "./user.decorator"
 /** 获取用户列表 请求 DTO */
 export class GetListRequestDto {
 
+    /** 部门ID */
+    @IsInt({ message: "部门ID必须是整数" })
+    @Type(() => Number)
+    @IsOptional()
+    deptId?: number
+
     /** 用户名 */
     @IsString({ message: "用户名必须是字符串" })
     @IsOptional()

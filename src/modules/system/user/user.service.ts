@@ -90,7 +90,15 @@ export class UserService {
         this.logger.info("[getList] started")
 
         const where = this.buildQueryWhere(params)
-        const allowedDeptIds = await this.resolveDeptIds(user?.id)
+
+        let allowedDeptIds = await this.resolveDeptIdsByDataScope(user?.id)
+
+        if (params.deptId) {
+
+            const filterDeptIds = await this.deptService.findDeptAndBelowIds(params.deptId)
+            allowedDeptIds = allowedDeptIds ? allowedDeptIds.filter(id => filterDeptIds.includes(id)) : filterDeptIds
+
+        }
 
         const data = await this.userRepository.findMany({
             where: {
@@ -124,11 +132,19 @@ export class UserService {
         this.logger.info("[getPageList] started")
 
         const { page, pageSize, ...restParams } = params
-
-        const where = this.buildQueryWhere(restParams)
-        const allowedDeptIds = await this.resolveDeptIds(user?.id)
         const skip = (page - 1) * pageSize
         const take = pageSize
+
+        const where = this.buildQueryWhere(restParams)
+
+        let allowedDeptIds = await this.resolveDeptIdsByDataScope(user?.id)
+
+        if (params.deptId) {
+
+            const filterDeptIds = await this.deptService.findDeptAndBelowIds(params.deptId)
+            allowedDeptIds = allowedDeptIds ? allowedDeptIds.filter(id => filterDeptIds.includes(id)) : filterDeptIds
+
+        }
 
         const data = await this.userRepository.findManyByPage(skip, take, {
             where: {
@@ -503,7 +519,7 @@ export class UserService {
         const skip = (page - 1) * pageSize
         const take = pageSize
 
-        const allowedDeptIds = await this.resolveDeptIds(user?.id)
+        const allowedDeptIds = await this.resolveDeptIdsByDataScope(user?.id)
 
         const data = await this.userRepository.findManyByPage(skip, take, {
             where: {
@@ -548,7 +564,7 @@ export class UserService {
         const skip = (page - 1) * pageSize
         const take = pageSize
 
-        const allowedDeptIds = await this.resolveDeptIds(user?.id)
+        const allowedDeptIds = await this.resolveDeptIdsByDataScope(user?.id)
 
         const data = await this.userRepository.findManyByPage(skip, take, {
             where: {
@@ -641,6 +657,77 @@ export class UserService {
                 }
             }
         }
+
+    }
+
+    /**
+     * 解析当前用户基于数据权限范围可访问的部门ID集合
+     *
+     * @param {number} [userId] 用户ID
+     * @returns {Promise<number[] | null>} 可访问的部门ID集合（null 表示全部可见）
+     */
+    private async resolveDeptIdsByDataScope (userId?: number): Promise<number[] | null> {
+
+        if (!userId) {
+
+            return []
+
+        }
+
+        const roleIds = await this.userRoleService.findRoleIdsByUserId(userId)
+        if (roleIds.length === 0) {
+
+            return []
+
+        }
+
+        const roles = await this.roleService.findByIds(roleIds)
+        if (roles.length === 0) {
+
+            return []
+
+        }
+
+        const scopePriority: Record<SysRoleDataScope, number> = {
+            All: 4,
+            DeptAndBelow: 3,
+            Dept: 2,
+            Custom: 1
+        }
+
+        const topRole = roles.reduce((prev, curr) =>
+            scopePriority[curr.dataScope] > scopePriority[prev.dataScope] ? curr : prev
+        )
+
+        if (topRole.dataScope === "All") {
+
+            return null
+
+        }
+
+        const currentUser = await this.userRepository.findById(userId)
+        const userDeptId = currentUser?.deptId
+
+        if (topRole.dataScope === "Dept") {
+
+            return userDeptId ? [userDeptId] : []
+
+        }
+
+        if (topRole.dataScope === "DeptAndBelow") {
+
+            return userDeptId ? this.deptService.findDeptAndBelowIds(userDeptId) : []
+
+        }
+
+        if (topRole.dataScope === "Custom") {
+
+            const customRoleIds = roles.filter(r => r.dataScope === "Custom").map(r => r.id)
+            return this.roleDeptService.findDeptIdsByRoleIds(customRoleIds)
+
+        }
+
+        return []
 
     }
 
@@ -789,77 +876,6 @@ export class UserService {
         }
 
         await this.userRoleService.setRolesByUserId(userId, roleIds)
-
-    }
-
-    /**
-     * 解析当前用户有权限访问的部门ID集合
-     *
-     * @param {number} [userId] 用户ID
-     * @returns {Promise<number[] | null>} 允许访问的部门ID集合
-     */
-    private async resolveDeptIds (userId?: number): Promise<number[] | null> {
-
-        if (!userId) {
-
-            return []
-
-        }
-
-        const roleIds = await this.userRoleService.findRoleIdsByUserId(userId)
-        if (roleIds.length === 0) {
-
-            return []
-
-        }
-
-        const roles = await this.roleService.findByIds(roleIds)
-        if (roles.length === 0) {
-
-            return []
-
-        }
-
-        const scopePriority: Record<SysRoleDataScope, number> = {
-            All: 4,
-            DeptAndBelow: 3,
-            Dept: 2,
-            Custom: 1
-        }
-
-        const topRole = roles.reduce((prev, curr) =>
-            scopePriority[curr.dataScope] > scopePriority[prev.dataScope] ? curr : prev
-        )
-
-        if (topRole.dataScope === "All") {
-
-            return null
-
-        }
-
-        const currentUser = await this.userRepository.findById(userId)
-        const userDeptId = currentUser?.deptId
-
-        if (topRole.dataScope === "Dept") {
-
-            return userDeptId ? [userDeptId] : []
-
-        }
-
-        if (topRole.dataScope === "DeptAndBelow") {
-
-            return userDeptId ? this.deptService.findDeptAndBelowIds(userDeptId) : []
-
-        }
-
-        if (topRole.dataScope === "Custom") {
-
-            const customRoleIds = roles.filter(r => r.dataScope === "Custom").map(r => r.id)
-            return this.roleDeptService.findDeptIdsByRoleIds(customRoleIds)
-
-        }
-
-        return []
 
     }
 

@@ -7,7 +7,14 @@ import { InjectPinoLogger } from "nestjs-pino"
 
 import { User } from "@/decorators"
 
-import { GetListRequestDto, GetDetailRequestDto, CreateRequestDto, UpdateRequestDto, DeleteRequestDto } from "./menu.dto"
+import {
+    GetListRequestDto,
+    GetDetailRequestDto,
+    CreateRequestDto,
+    UpdateRequestDto,
+    DeleteRequestDto,
+    GetTreeRequestDto
+} from "./menu.dto"
 import { MenuService } from "./menu.service"
 
 import type { SysMenu } from "@/prisma/client"
@@ -30,14 +37,35 @@ export class MenuController {
      * 获取菜单列表
      *
      * @param {GetListRequestDto} query 查询参数
+     * @param {Request["user"]} user 当前用户
      * @returns {Promise<SysMenu[]>} 菜单列表
      */
     @Get("getList")
-    public async getList (@Query() query: GetListRequestDto): Promise<SysMenu[]> {
+    public async getList (@Query() query: GetListRequestDto, @User() user: Request["user"]): Promise<SysMenu[]> {
 
         this.logger.info("[getList] started")
-        const data = await this.menuService.getList(query)
+        const data = await this.menuService.getList(query, user)
         this.logger.info("[getList] completed")
+        return data
+
+    }
+
+    /**
+     * 获取菜单树
+     *
+     * @param {GetTreeRequestDto} query 查询参数
+     * @param {Request["user"]} user 当前用户
+     * @returns {Promise<(SysMenu & { children: SysMenu[] })[]>} 菜单树
+     */
+    @Get("getTree")
+    public async getTree (
+        @Query() query: GetTreeRequestDto,
+        @User() user: Request["user"]
+    ): Promise<(SysMenu & { children: SysMenu[] })[]> {
+
+        this.logger.info("[getTree] started")
+        const data = await this.menuService.getTree(query, user)
+        this.logger.info("[getTree] completed")
         return data
 
     }

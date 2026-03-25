@@ -25,6 +25,9 @@ export class GetListRequestDto {
 
 }
 
+/** 获取菜单树 请求 DTO */
+export class GetTreeRequestDto extends GetListRequestDto {}
+
 /** 创建菜单 请求 DTO */
 export class CreateRequestDto {
 
