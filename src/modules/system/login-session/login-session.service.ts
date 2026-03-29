@@ -96,14 +96,20 @@ export class LoginSessionService {
     }
 
     /**
-     * 根据用户ID数组删除所有登录会话
+     * 根据刷新令牌查询登录会话
      *
-     * @param {number[]} userIds 用户ID数组
-     * @returns {Promise<void>}
+     * @param {string} refreshToken 刷新令牌
+     * @returns {Promise<SysLoginSession | null>} 会话信息
      */
-    public async deleteByUserIds (userIds: number[]): Promise<void> {
+    public async findByRefreshToken (refreshToken: string): Promise<SysLoginSession | null> {
 
-        await this.loginSessionRepository.deleteMany({ where: { userId: { in: userIds } } })
+        const hashedRefreshToken = this.cryptoService.computeHmac(refreshToken)
+
+        const data = await this.loginSessionRepository.findFirst({
+            where: { refreshToken: hashedRefreshToken }
+        })
+
+        return data
 
     }
 
@@ -131,24 +137,6 @@ export class LoginSessionService {
     }
 
     /**
-     * 根据刷新令牌查询登录会话
-     *
-     * @param {string} refreshToken 刷新令牌
-     * @returns {Promise<SysLoginSession | null>} 会话信息
-     */
-    public async findByRefreshToken (refreshToken: string): Promise<SysLoginSession | null> {
-
-        const hashedRefreshToken = this.cryptoService.computeHmac(refreshToken)
-
-        const data = await this.loginSessionRepository.findFirst({
-            where: { refreshToken: hashedRefreshToken }
-        })
-
-        return data
-
-    }
-
-    /**
      * 更新刷新令牌
      *
      * @param {{ id: number; refreshToken: string }} params 更新参数
@@ -165,6 +153,18 @@ export class LoginSessionService {
         await this.checkRefreshTokenNotExists(hashedRefreshToken)
 
         await this.loginSessionRepository.updateById(params.id, { refreshToken: hashedRefreshToken })
+
+    }
+
+    /**
+     * 根据用户ID数组删除所有登录会话
+     *
+     * @param {number[]} userIds 用户ID数组
+     * @returns {Promise<void>}
+     */
+    public async deleteByUserIds (userIds: number[]): Promise<void> {
+
+        await this.loginSessionRepository.deleteMany({ where: { userId: { in: userIds } } })
 
     }
 

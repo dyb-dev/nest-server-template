@@ -229,6 +229,19 @@ export class ConfigService {
     }
 
     /**
+     * 根据配置键获取配置信息
+     *
+     * @param {string} key 配置键
+     * @returns {Promise<SysConfig | null>} 配置信息
+     */
+    public async findByKey (key: string): Promise<SysConfig | null> {
+
+        const data = await this.configRepository.findFirst({ where: { key } })
+        return data
+
+    }
+
+    /**
      * 构建查询条件
      *
      * @param {GetListRequestDto} params 查询参数

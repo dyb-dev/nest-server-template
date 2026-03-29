@@ -4,7 +4,21 @@
 
 import { IsNotEmpty, IsString } from "class-validator"
 
+import { IsPassword, IsUsername } from "@/decorators"
 import { CaptchaRequestDto } from "@/dtos"
+
+/** 注册 请求 DTO */
+export class RegisterRequestDto extends CaptchaRequestDto {
+
+    /** 用户名 */
+    @IsUsername()
+    username: string
+
+    /** 密码 */
+    @IsPassword()
+    password: string
+
+}
 
 /** 登录 请求 DTO */
 export class LoginRequestDto extends CaptchaRequestDto {

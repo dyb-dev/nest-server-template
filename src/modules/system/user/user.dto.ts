@@ -6,21 +6,18 @@ import { PickType, IntersectionType } from "@nestjs/mapped-types"
 import { Type } from "class-transformer"
 import {
     IsString,
-    IsNotEmpty,
     IsEmail,
     IsOptional,
     IsBoolean,
     IsEnum,
     IsInt,
-    MinLength,
     MaxLength,
     IsPhoneNumber,
-    Matches,
     IsArray,
     ArrayMinSize
 } from "class-validator"
 
-import { IsPassword, ToBoolean } from "@/decorators"
+import { IsNickname, IsPassword, IsUsername, ToBoolean } from "@/decorators"
 import { PaginationRequestDto } from "@/dtos"
 import { UserGender } from "@/prisma/client"
 
@@ -73,9 +70,7 @@ export class GetPageListRequestDto extends IntersectionType(GetListRequestDto, P
 export class UserBaseDto {
 
     /** 昵称 */
-    @Matches(/^[\u4e00-\u9fa5a-zA-Z0-9._\-\s]+$/, { message: "昵称支持中文、英文、数字和常见符号 . _ - 空格" })
-    @MaxLength(20, { message: "昵称最多20个字符" })
-    @IsString({ message: "昵称必须是字符串" })
+    @IsNickname()
     @IsOptional()
     nickname?: string
 
@@ -134,11 +129,7 @@ export class UserBaseDto {
 export class CreateRequestDto extends UserBaseDto {
 
     /** 用户名 */
-    @Matches(/^[a-zA-Z0-9._-]+$/, { message: "用户名仅允许英文字母、数字和特殊符号 . _ -" })
-    @MaxLength(20, { message: "用户名最多20个字符" })
-    @MinLength(4, { message: "用户名至少4个字符" })
-    @IsNotEmpty({ message: "用户名不能为空" })
-    @IsString({ message: "用户名必须是字符串" })
+    @IsUsername()
     username: string
 
     /** 密码 */

@@ -7,7 +7,7 @@ import { InjectPinoLogger } from "nestjs-pino"
 
 import { Public, Cookies } from "@/decorators"
 
-import { LoginRequestDto } from "./auth.dto"
+import { RegisterRequestDto, LoginRequestDto } from "./auth.dto"
 import { AuthService } from "./auth.service"
 
 import type { SysUser } from "@/prisma/client"
@@ -25,6 +25,22 @@ export class AuthController {
     /** 认证服务 */
     @Inject(AuthService)
     private readonly authService: AuthService
+
+    /**
+     * 用户注册
+     *
+     * @param {RegisterRequestDto} body 请求体
+     * @returns {Promise<void>}
+     */
+    @Public()
+    @Post("register")
+    public async register (@Body() body: RegisterRequestDto): Promise<void> {
+
+        this.logger.info("[register] started")
+        await this.authService.register(body)
+        this.logger.info("[register] completed")
+
+    }
 
     /**
      * 用户登录

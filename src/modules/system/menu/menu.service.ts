@@ -294,19 +294,6 @@ export class MenuService {
     }
 
     /**
-     * 根据ID数组校验菜单是否全部存在
-     *
-     * @param {number[]} ids 菜单ID数组
-     * @returns {Promise<boolean>} 是否全部存在
-     */
-    public async existsByIds (ids: number[]): Promise<boolean> {
-
-        const count = await this.menuRepository.count({ where: { id: { in: ids } } })
-        return count === ids.length
-
-    }
-
-    /**
      * 根据用户ID获取拥有的权限标识集合
      *
      * @param {number} userId 用户ID
@@ -330,6 +317,19 @@ export class MenuService {
         })
 
         return menus.map(menu => menu.perms as string)
+
+    }
+
+    /**
+     * 根据ID数组校验菜单是否全部存在
+     *
+     * @param {number[]} ids 菜单ID数组
+     * @returns {Promise<boolean>} 是否全部存在
+     */
+    public async existsByIds (ids: number[]): Promise<boolean> {
+
+        const count = await this.menuRepository.count({ where: { id: { in: ids } } })
+        return count === ids.length
 
     }
 

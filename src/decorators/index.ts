@@ -8,8 +8,12 @@ export * from "./cache.decorator"
 export * from "./cookies.decorator"
 /** 导出 加解密装饰器 */
 export * from "./crypto.decorator"
+/** 导出 昵称装饰器 */
+export * from "./is-nickname.decorator"
 /** 导出 密码装饰器 */
 export * from "./is-password.decorator"
+/** 导出 用户名装饰器 */
+export * from "./is-username.decorator"
 /** 导出 定时任务装饰器 */
 export * from "./job.decorator"
 /** 导出 权限装饰器 */

@@ -11,7 +11,7 @@ import { BusinessLogicException } from "@/exceptions"
 import { DatabaseService } from "../../core"
 import { UserService } from "../user"
 
-import { UpdatePasswordRequestDto, UpdateAvatarRequestDto } from "./profile.dto"
+import { UpdatePasswordRequestDto, UpdateAvatarRequestDto, UpdateInfoRequestDto } from "./profile.dto"
 
 import type { SysUser } from "@/prisma/client"
 import type { TransactionalAdapterPrisma } from "@nestjs-cls/transactional-adapter-prisma"
@@ -47,6 +47,22 @@ export class ProfileService {
         const data = await this.userService.findById(user.id)
         this.logger.info("[getInfo] completed")
         return data
+
+    }
+
+    /**
+     * 更新个人信息
+     *
+     * @param {UpdateInfoRequestDto} params 更新个人信息参数
+     * @param {Request["user"]} user 当前用户
+     * @returns {Promise<void>}
+     */
+    @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
+    public async updateInfo (params: UpdateInfoRequestDto, user: Request["user"]): Promise<void> {
+
+        this.logger.info("[updateInfo] started")
+        await this.userService.updateInfo(params, user)
+        this.logger.info("[updateInfo] completed")
 
     }
 

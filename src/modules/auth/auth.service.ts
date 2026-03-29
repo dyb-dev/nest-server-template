@@ -13,9 +13,9 @@ import { BusinessLogicException, RefreshTokenException } from "@/exceptions"
 
 import { DatabaseService } from "../core"
 import { CaptchaService, CsrfService } from "../shared"
-import { LoginLogService, LoginSessionService, UserService } from "../system"
+import { ConfigService, LoginLogService, LoginSessionService, UserService } from "../system"
 
-import { LoginRequestDto } from "./auth.dto"
+import { LoginRequestDto, RegisterRequestDto } from "./auth.dto"
 
 import type { SysUser } from "@/prisma/client"
 import type { TransactionalAdapterPrisma } from "@nestjs-cls/transactional-adapter-prisma"
@@ -70,6 +70,10 @@ export class AuthService {
     @Inject(UserService)
     private readonly userService: UserService
 
+    /** 参数配置服务 */
+    @Inject(ConfigService)
+    private readonly configService: ConfigService
+
     /** 访问令牌 Cookie 名称 */
     public readonly ACCESS_TOKEN_COOKIE_NAME: string = "access-token"
 
@@ -86,6 +90,35 @@ export class AuthService {
         secure: PROD,
         // 是否禁止 JS 访问
         httpOnly: true
+    }
+
+    /**
+     * 用户注册
+     *
+     * @param {RegisterRequestDto} params 注册参数
+     * @returns {Promise<void>}
+     */
+    @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
+    public async register (params: RegisterRequestDto): Promise<void> {
+
+        this.logger.info("[register] started")
+
+        const config = await this.configService.findByKey("sys.account.register")
+        if (config?.value !== "true") {
+
+            throw new BusinessLogicException("注册功能未开启")
+
+        }
+
+        await this.captchaService.validate(params.captchaKey, params.captchaCode)
+
+        await this.userService.register({
+            username: params.username,
+            password: params.password
+        })
+
+        this.logger.info("[register] completed")
+
     }
 
     /**

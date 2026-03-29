@@ -32,7 +32,7 @@ import {
 } from "./user.dto"
 import { UserRepository } from "./user.repository"
 
-import type { SysUser, Prisma, SysDept } from "@/prisma/client"
+import type { SysUser, Prisma, SysDept, UserGender } from "@/prisma/client"
 import type { TransactionalAdapterPrisma } from "@nestjs-cls/transactional-adapter-prisma"
 import type { Request } from "express"
 import type { PinoLogger } from "nestjs-pino"
@@ -544,6 +544,70 @@ export class UserService {
         })
 
         return data
+
+    }
+
+    /**
+     * 注册用户
+     *
+     * @param {object} params 注册参数
+     * @param {string} params.username 用户名
+     * @param {string} params.password 密码
+     * @returns {Promise<void>}
+     */
+    public async register (params: { username: string; password: string }): Promise<void> {
+
+        await this.checkUsernameNotExists(params.username)
+
+        const hashedPassword = await this.hashPassword(params.password)
+
+        await this.userRepository.create({
+            username: params.username,
+            password: hashedPassword
+        })
+
+    }
+
+    /**
+     * 更新个人信息
+     *
+     * @param {object} params 参数
+     * @param {string} [params.nickname] 昵称
+     * @param {string} [params.phone] 手机号
+     * @param {string} [params.email] 邮箱
+     * @param {UserGender} [params.gender] 性别
+     * @param {Request["user"]} user 当前用户
+     * @returns {Promise<void>}
+     */
+    public async updateInfo (
+        params: { nickname?: string; phone?: string; email?: string; gender?: UserGender },
+        user: Request["user"]
+    ): Promise<void> {
+
+        if (!user) {
+
+            throw new BusinessLogicException("用户未登录")
+
+        }
+
+        const existingUser = await this.checkUserExists(user.id)
+
+        if (params.email && params.email !== existingUser.email) {
+
+            await this.checkEmailNotExists(params.email)
+
+        }
+
+        if (params.phone && params.phone !== existingUser.phone) {
+
+            await this.checkPhoneNotExists(params.phone)
+
+        }
+
+        await this.userRepository.updateById(user.id, {
+            ...params,
+            updatedBy: user?.username
+        })
 
     }
 
