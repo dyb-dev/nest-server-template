@@ -5,6 +5,7 @@
 import { Controller, Get, Post, Body, Query, Inject } from "@nestjs/common"
 import { InjectPinoLogger } from "nestjs-pino"
 
+import { Permission } from "@/decorators"
 import { PaginationResponseDto } from "@/dtos"
 
 import { DeleteRequestDto, GetListRequestDto, GetPageListRequestDto } from "./login-session.dto"
@@ -31,6 +32,7 @@ export class LoginSessionController {
      * @param {GetListRequestDto} query 查询参数
      * @returns {Promise<SysLoginSession[]>} 会话列表
      */
+    @Permission("system:loginSession:read")
     @Get("getList")
     public async getList (@Query() query: GetListRequestDto): Promise<SysLoginSession[]> {
 
@@ -47,6 +49,7 @@ export class LoginSessionController {
      * @param {GetPageListRequestDto} query 查询参数
      * @returns {Promise<PaginationResponseDto<SysLoginSession>>} 会话列表和总数
      */
+    @Permission("system:loginSession:read")
     @Get("getPageList")
     public async getPageList (@Query() query: GetPageListRequestDto): Promise<PaginationResponseDto<SysLoginSession>> {
 
@@ -63,6 +66,7 @@ export class LoginSessionController {
      * @param {DeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:loginSession:delete")
     @Post("delete")
     public async delete (@Body() body: DeleteRequestDto): Promise<void> {
 

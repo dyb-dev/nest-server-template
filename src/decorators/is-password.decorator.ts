@@ -1,5 +1,5 @@
 /*
- * @FileDesc: 用户装饰器
+ * @FileDesc: 密码装饰器
  */
 
 import { applyDecorators } from "@nestjs/common"

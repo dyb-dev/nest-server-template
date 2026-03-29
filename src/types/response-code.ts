@@ -18,7 +18,7 @@ export const enum EResponseCode {
     AccessTokenInvalid = 2001,
     /** 刷新令牌无效 */
     RefreshTokenInvalid = 2002,
-    /** 角色权限不足 */
+    /** 权限不足 */
     InsufficientPermissions = 2003,
 
     /** 参数验证错误 */

@@ -26,6 +26,8 @@ export * from "./notice"
 export * from "./operation-log"
 /** 导出 岗位模块 */
 export * from "./post"
+/** 导出 个人主页模块 */
+export * from "./profile"
 /** 导出 角色模块 */
 export * from "./role"
 /** 导出 角色部门模块 */

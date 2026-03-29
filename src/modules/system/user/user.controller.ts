@@ -5,7 +5,7 @@
 import { Controller, Post, Get, Body, Query, Inject } from "@nestjs/common"
 import { InjectPinoLogger } from "nestjs-pino"
 
-import { User } from "@/decorators"
+import { Permission, User } from "@/decorators"
 import { PaginationResponseDto } from "@/dtos"
 
 import {
@@ -14,11 +14,10 @@ import {
     GetListRequestDto,
     GetPageListRequestDto,
     GetDetailRequestDto,
-    UpdatePasswordRequestDto,
+    ResetPasswordRequestDto,
     UpdateStatusRequestDto,
     DeleteRequestDto,
-    BatchDeleteRequestDto,
-    UpdateAvatarRequestDto
+    BatchDeleteRequestDto
 } from "./user.dto"
 import { UserService } from "./user.service"
 
@@ -45,6 +44,7 @@ export class UserController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<Omit<SysUser, "password" | "deletedAt">[]>} 用户列表
      */
+    @Permission("system:user:read")
     @Get("getList")
     public async getList (
         @Query() query: GetListRequestDto,
@@ -65,6 +65,7 @@ export class UserController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
      */
+    @Permission("system:user:read")
     @Get("getPageList")
     public async getPageList (
         @Query() query: GetPageListRequestDto,
@@ -84,6 +85,7 @@ export class UserController {
      * @param {GetDetailRequestDto} query 查询参数
      * @returns {Promise<Omit<SysUser, "password" | "deletedAt">>} 用户详情
      */
+    @Permission("system:user:read")
     @Get("getDetail")
     public async getDetail (@Query() query: GetDetailRequestDto): Promise<Omit<SysUser, "password" | "deletedAt">> {
 
@@ -101,6 +103,7 @@ export class UserController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:user:create")
     @Post("create")
     public async create (@Body() body: CreateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -117,6 +120,7 @@ export class UserController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:user:update")
     @Post("update")
     public async update (@Body() body: UpdateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -127,28 +131,13 @@ export class UserController {
     }
 
     /**
-     * 更新用户密码
-     *
-     * @param {UpdatePasswordRequestDto} body 请求体
-     * @param {Request["user"]} user 当前用户
-     * @returns {Promise<void>}
-     */
-    @Post("updatePassword")
-    public async updatePassword (@Body() body: UpdatePasswordRequestDto, @User() user: Request["user"]): Promise<void> {
-
-        this.logger.info("[updatePassword] started")
-        await this.userService.updatePassword(body, user)
-        this.logger.info("[updatePassword] completed")
-
-    }
-
-    /**
      * 更新用户状态
      *
      * @param {UpdateStatusRequestDto} body 请求体
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:user:update")
     @Post("updateStatus")
     public async updateStatus (@Body() body: UpdateStatusRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -159,18 +148,19 @@ export class UserController {
     }
 
     /**
-     * 更新用户头像
+     * 重置用户密码
      *
-     * @param {UpdateAvatarRequestDto} body 请求体
+     * @param {ResetPasswordRequestDto} body 请求体
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
-    @Post("updateAvatar")
-    public async updateAvatar (@Body() body: UpdateAvatarRequestDto, @User() user: Request["user"]): Promise<void> {
+    @Permission("system:user:resetPassword")
+    @Post("resetPassword")
+    public async resetPassword (@Body() body: ResetPasswordRequestDto, @User() user: Request["user"]): Promise<void> {
 
-        this.logger.info("[updateAvatar] started")
-        await this.userService.updateAvatar(body, user)
-        this.logger.info("[updateAvatar] completed")
+        this.logger.info("[resetPassword] started")
+        await this.userService.resetPassword(body, user)
+        this.logger.info("[resetPassword] completed")
 
     }
 
@@ -180,6 +170,7 @@ export class UserController {
      * @param {DeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:user:delete")
     @Post("delete")
     public async delete (@Body() body: DeleteRequestDto): Promise<void> {
 
@@ -195,6 +186,7 @@ export class UserController {
      * @param {BatchDeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:user:delete")
     @Post("batchDelete")
     public async batchDelete (@Body() body: BatchDeleteRequestDto): Promise<void> {
 

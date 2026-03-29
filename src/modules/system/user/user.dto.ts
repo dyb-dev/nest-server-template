@@ -20,11 +20,9 @@ import {
     ArrayMinSize
 } from "class-validator"
 
-import { ToBoolean } from "@/decorators"
+import { IsPassword, ToBoolean } from "@/decorators"
 import { PaginationRequestDto } from "@/dtos"
 import { UserGender } from "@/prisma/client"
-
-import { IsPassword } from "./user.decorator"
 
 /** 获取用户列表 请求 DTO */
 export class GetListRequestDto {
@@ -162,19 +160,11 @@ export class UpdateRequestDto extends UserBaseDto {
 /** 获取用户详情 请求 DTO */
 export class GetDetailRequestDto extends PickType(UpdateRequestDto, ["id"]) {}
 
-/** 更新用户密码 请求 DTO */
-export class UpdatePasswordRequestDto extends PickType(UpdateRequestDto, ["id"]) {
-
-    /** 旧密码 */
-    @IsNotEmpty({ message: "旧密码不能为空" })
-    @IsString({ message: "旧密码必须是字符串" })
-    oldPassword: string
-
-    /** 新密码 */
-    @IsPassword("新密码")
-    newPassword: string
-
-}
+/** 重置用户密码 请求 DTO */
+export class ResetPasswordRequestDto extends IntersectionType(
+    PickType(UpdateRequestDto, ["id"]),
+    PickType(CreateRequestDto, ["password"])
+) {}
 
 /** 更新用户状态 请求 DTO */
 export class UpdateStatusRequestDto extends PickType(UpdateRequestDto, ["id"]) {
@@ -183,16 +173,6 @@ export class UpdateStatusRequestDto extends PickType(UpdateRequestDto, ["id"]) {
     @IsBoolean({ message: "是否激活必须是布尔值" })
     @ToBoolean()
     isActive: boolean
-
-}
-
-/** 更新用户头像 请求 DTO */
-export class UpdateAvatarRequestDto extends PickType(UpdateRequestDto, ["id"]) {
-
-    /** 头像 */
-    @MaxLength(100, { message: "头像路径最多100个字符" })
-    @IsString({ message: "头像必须是字符串" })
-    avatar: string
 
 }
 

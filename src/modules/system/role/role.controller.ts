@@ -5,7 +5,7 @@
 import { Controller, Get, Post, Body, Query, Inject } from "@nestjs/common"
 import { InjectPinoLogger } from "nestjs-pino"
 
-import { User } from "@/decorators"
+import { Permission, User } from "@/decorators"
 import { PaginationResponseDto } from "@/dtos"
 
 import {
@@ -48,6 +48,7 @@ export class RoleController {
      * @param {GetListRequestDto} query 查询参数
      * @returns {Promise<Omit<SysRole, "deletedAt">[]>} 角色列表
      */
+    @Permission("system:role:read")
     @Get("getList")
     public async getList (@Query() query: GetListRequestDto): Promise<Omit<SysRole, "deletedAt">[]> {
 
@@ -64,6 +65,7 @@ export class RoleController {
      * @param {GetPageListRequestDto} query 查询参数
      * @returns {Promise<PaginationResponseDto<Omit<SysRole, "deletedAt">>>} 角色列表和总数
      */
+    @Permission("system:role:read")
     @Get("getPageList")
     public async getPageList (@Query() query: GetPageListRequestDto): Promise<PaginationResponseDto<Omit<SysRole, "deletedAt">>> {
 
@@ -80,6 +82,7 @@ export class RoleController {
      * @param {GetDetailRequestDto} query 查询参数
      * @returns {Promise<Omit<SysRole, "deletedAt">>} 角色详情
      */
+    @Permission("system:role:read")
     @Get("getDetail")
     public async getDetail (@Query() query: GetDetailRequestDto): Promise<Omit<SysRole, "deletedAt">> {
 
@@ -97,6 +100,7 @@ export class RoleController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:role:create")
     @Post("create")
     public async create (@Body() body: CreateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -113,6 +117,7 @@ export class RoleController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:role:update")
     @Post("update")
     public async update (@Body() body: UpdateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -129,6 +134,7 @@ export class RoleController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:role:update")
     @Post("updateStatus")
     public async updateStatus (@Body() body: UpdateStatusRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -145,6 +151,7 @@ export class RoleController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:role:update")
     @Post("updateDataScope")
     public async updateDataScope (@Body() body: UpdateDataScopeRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -160,6 +167,7 @@ export class RoleController {
      * @param {DeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:role:delete")
     @Post("delete")
     public async delete (@Body() body: DeleteRequestDto): Promise<void> {
 
@@ -175,6 +183,7 @@ export class RoleController {
      * @param {BatchDeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:role:delete")
     @Post("batchDelete")
     public async batchDelete (@Body() body: BatchDeleteRequestDto): Promise<void> {
 
@@ -191,6 +200,7 @@ export class RoleController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
      */
+    @Permission("system:role:read")
     @Get("getBoundUserPageList")
     public async getBoundUserPageList (
         @Query() query: GetBoundUserPageListRequestDto,
@@ -211,6 +221,7 @@ export class RoleController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>>} 用户列表和总数
      */
+    @Permission("system:role:read")
     @Get("getUnboundUserPageList")
     public async getUnboundUserPageList (
         @Query() query: GetUnboundUserPageListRequestDto,
@@ -230,6 +241,7 @@ export class RoleController {
      * @param {BatchBindUserRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:role:update")
     @Post("batchBindUser")
     public async batchBindUser (@Body() body: BatchBindUserRequestDto): Promise<void> {
 
@@ -245,6 +257,7 @@ export class RoleController {
      * @param {UnbindUserRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:role:update")
     @Post("unbindUser")
     public async unbindUser (@Body() body: UnbindUserRequestDto): Promise<void> {
 
@@ -260,6 +273,7 @@ export class RoleController {
      * @param {BatchUnbindUserRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:role:update")
     @Post("batchUnbindUser")
     public async batchUnbindUser (@Body() body: BatchUnbindUserRequestDto): Promise<void> {
 

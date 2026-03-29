@@ -5,7 +5,7 @@
 import { Controller, Get, Post, Body, Query, Inject } from "@nestjs/common"
 import { InjectPinoLogger } from "nestjs-pino"
 
-import { User } from "@/decorators"
+import { Permission, User } from "@/decorators"
 
 import {
     GetListRequestDto,
@@ -40,6 +40,7 @@ export class MenuController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<SysMenu[]>} 菜单列表
      */
+    @Permission("system:menu:read")
     @Get("getList")
     public async getList (@Query() query: GetListRequestDto, @User() user: Request["user"]): Promise<SysMenu[]> {
 
@@ -57,6 +58,7 @@ export class MenuController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<(SysMenu & { children: SysMenu[] })[]>} 菜单树
      */
+    @Permission("system:menu:read")
     @Get("getTree")
     public async getTree (
         @Query() query: GetTreeRequestDto,
@@ -76,6 +78,7 @@ export class MenuController {
      * @param {GetDetailRequestDto} query 查询参数
      * @returns {Promise<SysMenu>} 菜单详情
      */
+    @Permission("system:menu:read")
     @Get("getDetail")
     public async getDetail (@Query() query: GetDetailRequestDto): Promise<SysMenu> {
 
@@ -93,6 +96,7 @@ export class MenuController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:menu:create")
     @Post("create")
     public async create (@Body() body: CreateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -109,6 +113,7 @@ export class MenuController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:menu:update")
     @Post("update")
     public async update (@Body() body: UpdateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -124,6 +129,7 @@ export class MenuController {
      * @param {DeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:menu:delete")
     @Post("delete")
     public async delete (@Body() body: DeleteRequestDto): Promise<void> {
 

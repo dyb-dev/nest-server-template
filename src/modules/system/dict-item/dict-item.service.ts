@@ -225,9 +225,7 @@ export class DictItemService {
      */
     public async existsByTypeIds (typeIds: number[]): Promise<boolean> {
 
-        this.logger.info("[existsByTypeIds] started")
         const count = await this.dictItemRepository.count({ where: { typeId: { in: typeIds } } })
-        this.logger.info("[existsByTypeIds] completed")
         return count > 0
 
     }

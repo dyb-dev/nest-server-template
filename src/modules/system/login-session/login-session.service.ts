@@ -103,9 +103,7 @@ export class LoginSessionService {
      */
     public async deleteByUserIds (userIds: number[]): Promise<void> {
 
-        this.logger.info("[deleteByUserIds] started")
         await this.loginSessionRepository.deleteMany({ where: { userId: { in: userIds } } })
-        this.logger.info("[deleteByUserIds] completed")
 
     }
 
@@ -116,8 +114,6 @@ export class LoginSessionService {
      * @returns {Promise<void>}
      */
     public async create (params: Prisma.SysLoginSessionCreateArgs["data"]): Promise<void> {
-
-        this.logger.info("[create] started")
 
         const { refreshToken, ...rest } = params
 
@@ -132,8 +128,6 @@ export class LoginSessionService {
 
         await this.loginSessionRepository.create(createData)
 
-        this.logger.info("[create] completed")
-
     }
 
     /**
@@ -144,15 +138,12 @@ export class LoginSessionService {
      */
     public async findByRefreshToken (refreshToken: string): Promise<SysLoginSession | null> {
 
-        this.logger.info("[findByRefreshToken] started")
-
         const hashedRefreshToken = this.cryptoService.computeHmac(refreshToken)
 
         const data = await this.loginSessionRepository.findFirst({
             where: { refreshToken: hashedRefreshToken }
         })
 
-        this.logger.info("[findByRefreshToken] completed")
         return data
 
     }
@@ -167,8 +158,6 @@ export class LoginSessionService {
      */
     public async updateRefreshToken (params: { id: number; refreshToken: string }): Promise<void> {
 
-        this.logger.info("[updateRefreshToken] started")
-
         await this.checkLoginSessionExists(params.id)
 
         const hashedRefreshToken = this.cryptoService.computeHmac(params.refreshToken)
@@ -176,8 +165,6 @@ export class LoginSessionService {
         await this.checkRefreshTokenNotExists(hashedRefreshToken)
 
         await this.loginSessionRepository.updateById(params.id, { refreshToken: hashedRefreshToken })
-
-        this.logger.info("[updateRefreshToken] completed")
 
     }
 
@@ -189,15 +176,11 @@ export class LoginSessionService {
      */
     public async deleteByRefreshToken (refreshToken: string): Promise<void> {
 
-        this.logger.info("[deleteByRefreshToken] started")
-
         const hashedRefreshToken = this.cryptoService.computeHmac(refreshToken)
 
         await this.loginSessionRepository.deleteMany({
             where: { refreshToken: hashedRefreshToken }
         })
-
-        this.logger.info("[deleteByRefreshToken] completed")
 
     }
 

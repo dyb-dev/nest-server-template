@@ -16,6 +16,7 @@ import { MenuModule } from "./menu"
 import { NoticeModule } from "./notice"
 import { OperationLogModule } from "./operation-log"
 import { PostModule } from "./post"
+import { ProfileModule } from "./profile"
 import { RoleModule } from "./role"
 import { RoleDeptModule } from "./role-dept"
 import { RoleMenuModule } from "./role-menu"
@@ -43,7 +44,8 @@ import { UserRoleModule } from "./user-role"
         RoleDeptModule,
         UserRoleModule,
         MenuModule,
-        RoleMenuModule
+        RoleMenuModule,
+        ProfileModule
     ],
     exports: [
         LoginLogModule,
@@ -63,7 +65,8 @@ import { UserRoleModule } from "./user-role"
         RoleDeptModule,
         UserRoleModule,
         MenuModule,
-        RoleMenuModule
+        RoleMenuModule,
+        ProfileModule
     ]
 })
 export class SystemModule {}

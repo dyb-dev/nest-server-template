@@ -9,7 +9,7 @@ import cookieParser from "cookie-parser"
 import helmet from "helmet"
 
 import { GlobalExceptionFilter } from "@/exception-filters"
-import { AuthGuard, CsrfGuard, ReplayGuard } from "@/guards"
+import { CsrfGuard, AuthGuard, ReplayGuard, PermissionGuard } from "@/guards"
 import { CryptoInterceptor, LoggerInterceptor, ResponseInterceptor, SensitiveFieldsInterceptor } from "@/interceptors"
 import { LoggerMiddleware } from "@/middlewares"
 import { CoreModule, SharedModule, SystemModule, AuthModule } from "@/modules"
@@ -36,6 +36,10 @@ import type { MiddlewareConsumer, NestModule } from "@nestjs/common"
         {
             provide: APP_GUARD,
             useClass: ReplayGuard
+        },
+        {
+            provide: APP_GUARD,
+            useClass: PermissionGuard
         },
         {
             provide: APP_INTERCEPTOR,

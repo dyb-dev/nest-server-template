@@ -3,19 +3,12 @@
  */
 
 import { Inject, Injectable } from "@nestjs/common"
-import { InjectPinoLogger } from "nestjs-pino"
 
 import { RoleDeptRepository } from "./role-dept.repository"
-
-import type { PinoLogger } from "nestjs-pino"
 
 /** 角色部门服务 */
 @Injectable()
 export class RoleDeptService {
-
-    /** 日志记录器 */
-    @InjectPinoLogger(RoleDeptService.name)
-    private readonly logger: PinoLogger
 
     /** 角色部门仓储 */
     @Inject(RoleDeptRepository)
@@ -29,9 +22,7 @@ export class RoleDeptService {
      */
     public async findDeptIdsByRoleIds (roleIds: number[]): Promise<number[]> {
 
-        this.logger.info("[findDeptIdsByRoleIds] started")
         const list = await this.roleDeptRepository.findMany({ where: { roleId: { in: roleIds } } })
-        this.logger.info("[findDeptIdsByRoleIds] completed")
         return list.map(item => item.deptId)
 
     }
@@ -45,14 +36,12 @@ export class RoleDeptService {
      */
     public async setDeptsByRoleId (roleId: number, deptIds: number[]): Promise<void> {
 
-        this.logger.info("[setDeptsByRoleId] started")
         await this.roleDeptRepository.deleteMany({ where: { roleId } })
         if (deptIds.length > 0) {
 
             await this.roleDeptRepository.createMany(deptIds.map(deptId => ({ roleId, deptId })))
 
         }
-        this.logger.info("[setDeptsByRoleId] completed")
 
     }
 
@@ -64,9 +53,7 @@ export class RoleDeptService {
      */
     public async deleteByRoleIds (roleIds: number[]): Promise<void> {
 
-        this.logger.info("[deleteByRoleIds] started")
         await this.roleDeptRepository.deleteMany({ where: { roleId: { in: roleIds } } })
-        this.logger.info("[deleteByRoleIds] completed")
 
     }
 
@@ -78,9 +65,7 @@ export class RoleDeptService {
      */
     public async existsByDeptId (deptId: number): Promise<boolean> {
 
-        this.logger.info("[existsByDeptId] started")
         const exists = await this.roleDeptRepository.exists({ deptId })
-        this.logger.info("[existsByDeptId] completed")
         return exists
 
     }

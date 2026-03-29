@@ -270,15 +270,12 @@ export class DeptService {
      */
     public async findDeptAndBelowIds (deptId: number): Promise<number[]> {
 
-        this.logger.info("[findDeptAndBelowIds] started")
-
         const depts = await this.deptRepository.findMany({
             where: {
                 OR: [{ id: deptId }, { ancestors: { contains: String(deptId) } }]
             }
         })
 
-        this.logger.info("[findDeptAndBelowIds] completed")
         return depts.map(d => d.id)
 
     }
@@ -291,9 +288,7 @@ export class DeptService {
      */
     public async clearLeaderByUserIds (userIds: number[]): Promise<void> {
 
-        this.logger.info("[clearLeaderByUserIds] started")
         await this.deptRepository.updateMany({ leaderId: null }, { where: { leaderId: { in: userIds } } })
-        this.logger.info("[clearLeaderByUserIds] completed")
 
     }
 
@@ -305,9 +300,7 @@ export class DeptService {
      */
     public async existsByIds (ids: number[]): Promise<boolean> {
 
-        this.logger.info("[existsByIds] started")
         const count = await this.deptRepository.count({ where: { id: { in: ids } } })
-        this.logger.info("[existsByIds] completed")
         return count === ids.length
 
     }

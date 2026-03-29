@@ -3,19 +3,12 @@
  */
 
 import { Inject, Injectable } from "@nestjs/common"
-import { InjectPinoLogger } from "nestjs-pino"
 
 import { UserPostRepository } from "./user-post.repository"
-
-import type { PinoLogger } from "nestjs-pino"
 
 /** 用户岗位服务 */
 @Injectable()
 export class UserPostService {
-
-    /** 日志记录器 */
-    @InjectPinoLogger(UserPostService.name)
-    private readonly logger: PinoLogger
 
     /** 用户岗位仓储 */
     @Inject(UserPostRepository)
@@ -30,14 +23,12 @@ export class UserPostService {
      */
     public async setPostsByUserId (userId: number, postIds: number[]): Promise<void> {
 
-        this.logger.info("[setPostsByUserId] started")
         await this.userPostRepository.deleteMany({ where: { userId } })
         if (postIds.length > 0) {
 
             await this.userPostRepository.createMany(postIds.map(postId => ({ userId, postId })))
 
         }
-        this.logger.info("[setPostsByUserId] completed")
 
     }
 
@@ -49,9 +40,7 @@ export class UserPostService {
      */
     public async deleteByUserIds (userIds: number[]): Promise<void> {
 
-        this.logger.info("[deleteByUserIds] started")
         await this.userPostRepository.deleteMany({ where: { userId: { in: userIds } } })
-        this.logger.info("[deleteByUserIds] completed")
 
     }
 
@@ -63,9 +52,7 @@ export class UserPostService {
      */
     public async existsByPostIds (postIds: number[]): Promise<boolean> {
 
-        this.logger.info("[existsByPostIds] started")
         const exists = await this.userPostRepository.exists({ postId: { in: postIds } })
-        this.logger.info("[existsByPostIds] completed")
         return exists
 
     }

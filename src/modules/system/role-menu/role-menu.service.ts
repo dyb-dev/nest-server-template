@@ -3,19 +3,12 @@
  */
 
 import { Inject, Injectable } from "@nestjs/common"
-import { InjectPinoLogger } from "nestjs-pino"
 
 import { RoleMenuRepository } from "./role-menu.repository"
-
-import type { PinoLogger } from "nestjs-pino"
 
 /** 角色菜单服务 */
 @Injectable()
 export class RoleMenuService {
-
-    /** 日志记录器 */
-    @InjectPinoLogger(RoleMenuService.name)
-    private readonly logger: PinoLogger
 
     /** 角色菜单仓储 */
     @Inject(RoleMenuRepository)
@@ -29,10 +22,21 @@ export class RoleMenuService {
      */
     public async findMenuIdsByRoleIds (roleIds: number[]): Promise<number[]> {
 
-        this.logger.info("[findMenuIdsByRoleIds] started")
         const list = await this.roleMenuRepository.findMany({ where: { roleId: { in: roleIds } } })
-        this.logger.info("[findMenuIdsByRoleIds] completed")
         return list.map(item => item.menuId)
+
+    }
+
+    /**
+     * 根据菜单ID查询所有角色ID数组
+     *
+     * @param {number} menuId 菜单ID
+     * @returns {Promise<number[]>} 角色ID数组
+     */
+    public async findRoleIdsByMenuId (menuId: number): Promise<number[]> {
+
+        const list = await this.roleMenuRepository.findMany({ where: { menuId } })
+        return list.map(item => item.roleId)
 
     }
 
@@ -45,14 +49,30 @@ export class RoleMenuService {
      */
     public async setMenusByRoleId (roleId: number, menuIds: number[]): Promise<void> {
 
-        this.logger.info("[setMenusByRoleId] started")
         await this.roleMenuRepository.deleteMany({ where: { roleId } })
         if (menuIds.length > 0) {
 
             await this.roleMenuRepository.createMany(menuIds.map(menuId => ({ roleId, menuId })))
 
         }
-        this.logger.info("[setMenusByRoleId] completed")
+
+    }
+
+    /**
+     * 设置菜单角色关联
+     *
+     * @param {number} menuId 菜单ID
+     * @param {number[]} roleIds 角色ID数组
+     * @returns {Promise<void>}
+     */
+    public async setRolesByMenuId (menuId: number, roleIds: number[]): Promise<void> {
+
+        await this.roleMenuRepository.deleteMany({ where: { menuId } })
+        if (roleIds.length > 0) {
+
+            await this.roleMenuRepository.createMany(roleIds.map(roleId => ({ roleId, menuId })))
+
+        }
 
     }
 
@@ -64,9 +84,7 @@ export class RoleMenuService {
      */
     public async deleteByRoleIds (roleIds: number[]): Promise<void> {
 
-        this.logger.info("[deleteByRoleIds] started")
         await this.roleMenuRepository.deleteMany({ where: { roleId: { in: roleIds } } })
-        this.logger.info("[deleteByRoleIds] completed")
 
     }
 
@@ -78,9 +96,7 @@ export class RoleMenuService {
      */
     public async deleteByMenuId (menuId: number): Promise<void> {
 
-        this.logger.info("[deleteByMenuId] started")
         await this.roleMenuRepository.deleteMany({ where: { menuId } })
-        this.logger.info("[deleteByMenuId] completed")
 
     }
 

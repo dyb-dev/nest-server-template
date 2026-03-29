@@ -14,6 +14,7 @@ import {
     BusinessLogicException,
     CryptoOperationException,
     CsrfTokenException,
+    InsufficientPermissionsException,
     ParameterValidationException,
     RefreshTokenException,
     ReplayRequestException
@@ -33,6 +34,7 @@ type TException =
     | CsrfTokenException
     | AccessTokenException
     | ReplayRequestException
+    | InsufficientPermissionsException
     | RefreshTokenException
     | CryptoOperationException
     | ParameterValidationException
@@ -133,11 +135,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
         }
 
-        // CSRF 令牌无效 | 访问令牌无效 | 重放请求已拒绝 | 刷新令牌无效 | 加解密操作错误 | 参数验证错误 | 业务逻辑错误
+        // CSRF 令牌无效 | 访问令牌无效 | 重放请求已拒绝 | 权限不足 | 刷新令牌无效 | 加解密操作错误 | 参数验证错误 | 业务逻辑错误
         if (
             exception instanceof CsrfTokenException ||
             exception instanceof AccessTokenException ||
             exception instanceof ReplayRequestException ||
+            exception instanceof InsufficientPermissionsException ||
             exception instanceof RefreshTokenException ||
             exception instanceof CryptoOperationException ||
             exception instanceof ParameterValidationException ||

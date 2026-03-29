@@ -25,15 +25,14 @@ import {
     GetListRequestDto,
     GetPageListRequestDto,
     GetDetailRequestDto,
-    UpdatePasswordRequestDto,
+    ResetPasswordRequestDto,
     UpdateStatusRequestDto,
     DeleteRequestDto,
-    BatchDeleteRequestDto,
-    UpdateAvatarRequestDto
+    BatchDeleteRequestDto
 } from "./user.dto"
 import { UserRepository } from "./user.repository"
 
-import type { SysUser, Prisma, SysDept, SysRoleDataScope } from "@/prisma/client"
+import type { SysUser, Prisma, SysDept } from "@/prisma/client"
 import type { TransactionalAdapterPrisma } from "@nestjs-cls/transactional-adapter-prisma"
 import type { Request } from "express"
 import type { PinoLogger } from "nestjs-pino"
@@ -172,35 +171,7 @@ export class UserService {
     public async getDetail (params: GetDetailRequestDto): Promise<Omit<SysUser, "password" | "deletedAt">> {
 
         this.logger.info("[getDetail] started")
-
-        const data = await this.userRepository.findById(params.id, {
-            include: {
-                dept: {
-                    select: { id: true, name: true }
-                },
-                userRoles: {
-                    select: {
-                        role: {
-                            select: { id: true, name: true, code: true }
-                        }
-                    }
-                },
-                userPosts: {
-                    select: {
-                        post: {
-                            select: { id: true, name: true, code: true }
-                        }
-                    }
-                }
-            }
-        })
-
-        if (!data) {
-
-            throw new BusinessLogicException("用户不存在")
-
-        }
-
+        const data = await this.findById(params.id)
         this.logger.info("[getDetail] completed")
         return data
 
@@ -304,33 +275,20 @@ export class UserService {
     }
 
     /**
-     * 更新用户密码
+     * 重置用户密码
      *
-     * @param {UpdatePasswordRequestDto} params 更新密码参数
+     * @param {ResetPasswordRequestDto} params 重置密码参数
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
     @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
-    public async updatePassword (params: UpdatePasswordRequestDto, user: Request["user"]): Promise<void> {
+    public async resetPassword (params: ResetPasswordRequestDto, user: Request["user"]): Promise<void> {
 
-        this.logger.info("[updatePassword] started")
+        this.logger.info("[resetPassword] started")
 
-        if (params.oldPassword === params.newPassword) {
+        await this.checkUserExists(params.id)
 
-            throw new BusinessLogicException("新密码不能与旧密码相同")
-
-        }
-
-        const existingUser = await this.checkUserExists(params.id)
-
-        const isPasswordValid = await this.validatePassword(params.oldPassword, existingUser.password)
-        if (!isPasswordValid) {
-
-            throw new BusinessLogicException("旧密码不正确")
-
-        }
-
-        const hashedPassword = await this.hashPassword(params.newPassword)
+        const hashedPassword = await this.hashPassword(params.password)
 
         await this.userRepository.updateById(params.id, {
             password: hashedPassword,
@@ -338,7 +296,7 @@ export class UserService {
             updatedBy: user?.username
         })
 
-        this.logger.info("[updatePassword] completed")
+        this.logger.info("[resetPassword] completed")
 
     }
 
@@ -368,29 +326,6 @@ export class UserService {
         })
 
         this.logger.info("[updateStatus] completed")
-
-    }
-
-    /**
-     * 更新用户头像
-     *
-     * @param {UpdateAvatarRequestDto} params 更新头像参数
-     * @param {Request["user"]} user 当前用户
-     * @returns {Promise<void>}
-     */
-    @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
-    public async updateAvatar (params: UpdateAvatarRequestDto, user: Request["user"]): Promise<void> {
-
-        this.logger.info("[updateAvatar] started")
-
-        await this.checkUserExists(params.id)
-
-        await this.userRepository.updateById(params.id, {
-            avatar: params.avatar,
-            updatedBy: user?.username
-        })
-
-        this.logger.info("[updateAvatar] completed")
 
     }
 
@@ -470,6 +405,47 @@ export class UserService {
     }
 
     /**
+     * 根据用户ID获取用户信息
+     *
+     * @param {number} id 用户ID
+     * @returns {Promise<Omit<SysUser, "password" | "deletedAt">>} 用户信息
+     * @throws {BusinessLogicException} 用户不存在时抛出异常
+     */
+    public async findById (id: number): Promise<Omit<SysUser, "password" | "deletedAt">> {
+
+        const data = await this.userRepository.findById(id, {
+            include: {
+                dept: {
+                    select: { id: true, name: true }
+                },
+                userRoles: {
+                    select: {
+                        role: {
+                            select: { id: true, name: true, code: true }
+                        }
+                    }
+                },
+                userPosts: {
+                    select: {
+                        post: {
+                            select: { id: true, name: true, code: true }
+                        }
+                    }
+                }
+            }
+        })
+
+        if (!data) {
+
+            throw new BusinessLogicException("用户不存在")
+
+        }
+
+        return data
+
+    }
+
+    /**
      * 根据用户名获取用户信息
      *
      * @param {string} username 用户名
@@ -477,15 +453,12 @@ export class UserService {
      */
     public async findByUsername (username: string): Promise<(Omit<SysUser, "deletedAt"> & { dept: SysDept | null }) | null> {
 
-        this.logger.info("[findByUsername] started")
-
         const data = (await this.userRepository.findFirst({
             where: { username },
             omit: { password: false },
-            include: { dept: true }
+            include: { dept: { select: { id: true, name: true } } }
         })) as (Omit<SysUser, "deletedAt"> & { dept: SysDept | null }) | null
 
-        this.logger.info("[findByUsername] completed")
         return data
 
     }
@@ -513,8 +486,6 @@ export class UserService {
         user: Request["user"]
     ): Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>> {
 
-        this.logger.info("[findBoundUserPageListByRoleId] started")
-
         const { roleId, username, phone, page, pageSize } = params
         const skip = (page - 1) * pageSize
         const take = pageSize
@@ -530,7 +501,6 @@ export class UserService {
             }
         })
 
-        this.logger.info("[findBoundUserPageListByRoleId] completed")
         return data
 
     }
@@ -558,8 +528,6 @@ export class UserService {
         user: Request["user"]
     ): Promise<PaginationResponseDto<Omit<SysUser, "password" | "deletedAt">>> {
 
-        this.logger.info("[findUnboundUserPageListByRoleId] started")
-
         const { roleId, username, phone, page, pageSize } = params
         const skip = (page - 1) * pageSize
         const take = pageSize
@@ -575,8 +543,74 @@ export class UserService {
             }
         })
 
-        this.logger.info("[findUnboundUserPageListByRoleId] completed")
         return data
+
+    }
+
+    /**
+     * 更新用户密码
+     *
+     * @param {object} params 参数
+     * @param {string} params.oldPassword 旧密码
+     * @param {string} params.newPassword 新密码
+     * @param {Request["user"]} user 当前用户
+     * @returns {Promise<void>}
+     */
+    public async updatePassword (params: { oldPassword: string; newPassword: string }, user: Request["user"]): Promise<void> {
+
+        if (!user) {
+
+            throw new BusinessLogicException("用户未登录")
+
+        }
+
+        if (params.oldPassword === params.newPassword) {
+
+            throw new BusinessLogicException("新密码不能与旧密码相同")
+
+        }
+
+        const existingUser = await this.checkUserExists(user.id)
+
+        const isPasswordValid = await this.validatePassword(params.oldPassword, existingUser.password)
+        if (!isPasswordValid) {
+
+            throw new BusinessLogicException("旧密码不正确")
+
+        }
+
+        const hashedPassword = await this.hashPassword(params.newPassword)
+
+        await this.userRepository.updateById(user.id, {
+            password: hashedPassword,
+            passwordUpdatedAt: new Date(),
+            updatedBy: user?.username
+        })
+
+    }
+
+    /**
+     * 更新用户头像
+     *
+     * @param {object} params 参数
+     * @param {string} params.avatar 头像路径
+     * @param {Request["user"]} user 当前用户
+     * @returns {Promise<void>}
+     */
+    public async updateAvatar (params: { avatar: string }, user: Request["user"]): Promise<void> {
+
+        if (!user) {
+
+            throw new BusinessLogicException("用户未登录")
+
+        }
+
+        await this.checkUserExists(user.id)
+
+        await this.userRepository.updateById(user.id, {
+            avatar: params.avatar,
+            updatedBy: user?.username
+        })
 
     }
 
@@ -588,9 +622,7 @@ export class UserService {
      */
     public async existsByIds (ids: number[]): Promise<boolean> {
 
-        this.logger.info("[existsByIds] started")
         const count = await this.userRepository.count({ where: { id: { in: ids } } })
-        this.logger.info("[existsByIds] completed")
         return count === ids.length
 
     }
@@ -603,9 +635,7 @@ export class UserService {
      */
     public async existsByDeptId (deptId: number): Promise<boolean> {
 
-        this.logger.info("[existsByDeptId] started")
         const exists = await this.userRepository.exists({ deptId })
-        this.logger.info("[existsByDeptId] completed")
         return exists
 
     }
@@ -688,18 +718,7 @@ export class UserService {
 
         }
 
-        const scopePriority: Record<SysRoleDataScope, number> = {
-            All: 4,
-            DeptAndBelow: 3,
-            Dept: 2,
-            Custom: 1
-        }
-
-        const topRole = roles.reduce((prev, curr) =>
-            scopePriority[curr.dataScope] > scopePriority[prev.dataScope] ? curr : prev
-        )
-
-        if (topRole.dataScope === "All") {
+        if (roles.some(r => r.dataScope === "All")) {
 
             return null
 
@@ -708,26 +727,33 @@ export class UserService {
         const currentUser = await this.userRepository.findById(userId)
         const userDeptId = currentUser?.deptId
 
-        if (topRole.dataScope === "Dept") {
+        const deptIds = new Set<number>()
 
-            return userDeptId ? [userDeptId] : []
+        if (userDeptId) {
+
+            if (roles.some(r => r.dataScope === "DeptAndBelow")) {
+
+                const ids = await this.deptService.findDeptAndBelowIds(userDeptId)
+                ids.forEach(id => deptIds.add(id))
+
+            }
+            else if (roles.some(r => r.dataScope === "Dept")) {
+
+                deptIds.add(userDeptId)
+
+            }
 
         }
 
-        if (topRole.dataScope === "DeptAndBelow") {
+        const customRoleIds = roles.filter(r => r.dataScope === "Custom").map(r => r.id)
+        if (customRoleIds.length > 0) {
 
-            return userDeptId ? this.deptService.findDeptAndBelowIds(userDeptId) : []
-
-        }
-
-        if (topRole.dataScope === "Custom") {
-
-            const customRoleIds = roles.filter(r => r.dataScope === "Custom").map(r => r.id)
-            return this.roleDeptService.findDeptIdsByRoleIds(customRoleIds)
+            const ids = await this.roleDeptService.findDeptIdsByRoleIds(customRoleIds)
+            ids.forEach(id => deptIds.add(id))
 
         }
 
-        return []
+        return [...deptIds]
 
     }
 

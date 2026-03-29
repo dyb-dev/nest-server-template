@@ -5,7 +5,7 @@
 import { Controller, Get, Post, Body, Query, Inject } from "@nestjs/common"
 import { InjectPinoLogger } from "nestjs-pino"
 
-import { User } from "@/decorators"
+import { Permission, User } from "@/decorators"
 import { PaginationResponseDto } from "@/dtos"
 
 import {
@@ -41,6 +41,7 @@ export class NoticeController {
      * @param {GetListRequestDto} query 查询参数
      * @returns {Promise<SysNotice[]>} 公告列表
      */
+    @Permission("system:notice:read")
     @Get("getList")
     public async getList (@Query() query: GetListRequestDto): Promise<SysNotice[]> {
 
@@ -57,6 +58,7 @@ export class NoticeController {
      * @param {GetPageListRequestDto} query 查询参数
      * @returns {Promise<PaginationResponseDto<SysNotice>>} 公告列表和总数
      */
+    @Permission("system:notice:read")
     @Get("getPageList")
     public async getPageList (@Query() query: GetPageListRequestDto): Promise<PaginationResponseDto<SysNotice>> {
 
@@ -73,6 +75,7 @@ export class NoticeController {
      * @param {GetDetailRequestDto} query 查询参数
      * @returns {Promise<SysNotice>} 公告详情
      */
+    @Permission("system:notice:read")
     @Get("getDetail")
     public async getDetail (@Query() query: GetDetailRequestDto): Promise<SysNotice> {
 
@@ -90,6 +93,7 @@ export class NoticeController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:notice:create")
     @Post("create")
     public async create (@Body() body: CreateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -106,6 +110,7 @@ export class NoticeController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:notice:update")
     @Post("update")
     public async update (@Body() body: UpdateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -121,6 +126,7 @@ export class NoticeController {
      * @param {DeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:notice:delete")
     @Post("delete")
     public async delete (@Body() body: DeleteRequestDto): Promise<void> {
 
@@ -136,6 +142,7 @@ export class NoticeController {
      * @param {BatchDeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:notice:delete")
     @Post("batchDelete")
     public async batchDelete (@Body() body: BatchDeleteRequestDto): Promise<void> {
 

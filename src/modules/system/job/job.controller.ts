@@ -5,7 +5,7 @@
 import { Controller, Post, Get, Body, Query, Inject } from "@nestjs/common"
 import { InjectPinoLogger } from "nestjs-pino"
 
-import { User } from "@/decorators"
+import { Permission, User } from "@/decorators"
 import { PaginationResponseDto } from "@/dtos"
 
 import {
@@ -43,6 +43,7 @@ export class JobController {
      * @param {GetListRequestDto} query 查询参数
      * @returns {Promise<SysJob[]>} 定时任务列表
      */
+    @Permission("system:job:read")
     @Get("getList")
     public async getList (@Query() query: GetListRequestDto): Promise<SysJob[]> {
 
@@ -59,6 +60,7 @@ export class JobController {
      * @param {GetPageListRequestDto} query 查询参数
      * @returns {Promise<PaginationResponseDto<SysJob>>} 定时任务列表和总数
      */
+    @Permission("system:job:read")
     @Get("getPageList")
     public async getPageList (@Query() query: GetPageListRequestDto): Promise<PaginationResponseDto<SysJob>> {
 
@@ -75,6 +77,7 @@ export class JobController {
      * @param {GetDetailRequestDto} query 查询参数
      * @returns {Promise<SysJob>} 定时任务详情
      */
+    @Permission("system:job:read")
     @Get("getDetail")
     public async getDetail (@Query() query: GetDetailRequestDto): Promise<SysJob> {
 
@@ -92,6 +95,7 @@ export class JobController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:job:create")
     @Post("create")
     public async create (@Body() body: CreateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -108,6 +112,7 @@ export class JobController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:job:update")
     @Post("update")
     public async update (@Body() body: UpdateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -124,6 +129,7 @@ export class JobController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:job:update")
     @Post("updateStatus")
     public async updateStatus (@Body() body: UpdateStatusRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -139,6 +145,7 @@ export class JobController {
      * @param {DeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:job:delete")
     @Post("delete")
     public async delete (@Body() body: DeleteRequestDto): Promise<void> {
 
@@ -154,6 +161,7 @@ export class JobController {
      * @param {BatchDeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:job:delete")
     @Post("batchDelete")
     public async batchDelete (@Body() body: BatchDeleteRequestDto): Promise<void> {
 
@@ -169,6 +177,7 @@ export class JobController {
      * @param {RunRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:job:run")
     @Post("run")
     public async run (@Body() body: RunRequestDto): Promise<void> {
 

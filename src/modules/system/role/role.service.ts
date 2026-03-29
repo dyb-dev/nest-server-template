@@ -452,9 +452,7 @@ export class RoleService {
      */
     public async findByIds (ids: number[]): Promise<Omit<SysRole, "deletedAt">[]> {
 
-        this.logger.info("[findByIds] started")
         const data = await this.roleRepository.findMany({ where: { id: { in: ids } } })
-        this.logger.info("[findByIds] completed")
         return data
 
     }
@@ -467,9 +465,7 @@ export class RoleService {
      */
     public async existsByIds (ids: number[]): Promise<boolean> {
 
-        this.logger.info("[existsByIds] started")
         const count = await this.roleRepository.count({ where: { id: { in: ids } } })
-        this.logger.info("[existsByIds] completed")
         return count === ids.length
 
     }

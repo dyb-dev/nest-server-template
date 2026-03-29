@@ -8,7 +8,6 @@ import { HttpService } from "@nestjs/axios"
 import { InjectQueue } from "@nestjs/bullmq"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Controller, Post, Inject, Get, Sse, Scope, Body, StreamableFile } from "@nestjs/common"
-import { EventEmitter2, OnEvent } from "@nestjs/event-emitter"
 import { InjectPinoLogger } from "nestjs-pino"
 import { interval, map } from "rxjs"
 
@@ -53,10 +52,6 @@ implements OnModuleInit, OnApplicationBootstrap, OnModuleDestroy, BeforeApplicat
     /** HTTP 服务 */
     @Inject(HttpService)
     private readonly httpService: HttpService
-
-    /** 事件触发器 */
-    @Inject(EventEmitter2)
-    private readonly eventEmitter: EventEmitter2
 
     /** 缓存管理器 */
     @Inject(CACHE_MANAGER)
@@ -129,9 +124,6 @@ implements OnModuleInit, OnApplicationBootstrap, OnModuleDestroy, BeforeApplicat
             // 存入缓存
             this.cacheManager.set(cacheKey, data)
 
-            // 发送事件
-            this.eventEmitter.emit("getDemoList", data)
-
             // 添加到队列后台执行
             this.demoQueue.add("getDemoList", data)
 
@@ -140,18 +132,6 @@ implements OnModuleInit, OnApplicationBootstrap, OnModuleDestroy, BeforeApplicat
         this.logger.info("[getDemoList] completed")
 
         return data
-
-    }
-
-    /**
-     * 监听获取演示列表事件
-     *
-     * @param {string[]} params 事件参数
-     */
-    @OnEvent("getDemoList")
-    public onGetDemoListEvent (params: string[]): void {
-
-        this.logger.info(params, "onGetDemoListEvent")
 
     }
 

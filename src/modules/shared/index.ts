@@ -12,6 +12,8 @@ export * from "./csrf"
 export * from "./file"
 /** 导出 位置模块 */
 export * from "./location"
+/** 导出 权限模块 */
+export * from "./permission"
 /** 导出 防重放模块 */
 export * from "./replay"
 /** 导出 UserAgent 模块 */

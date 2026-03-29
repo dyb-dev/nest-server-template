@@ -235,9 +235,7 @@ export class PostService {
      */
     public async existsByIds (ids: number[]): Promise<boolean> {
 
-        this.logger.info("[existsByIds] started")
         const count = await this.postRepository.count({ where: { id: { in: ids } } })
-        this.logger.info("[existsByIds] completed")
         return count === ids.length
 
     }

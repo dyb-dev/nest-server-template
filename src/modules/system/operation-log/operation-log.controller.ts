@@ -5,6 +5,7 @@
 import { Controller, Get, Post, Body, Query, Inject } from "@nestjs/common"
 import { InjectPinoLogger } from "nestjs-pino"
 
+import { Permission } from "@/decorators"
 import { PaginationResponseDto } from "@/dtos"
 
 import { BatchDeleteRequestDto, GetListRequestDto, GetPageListRequestDto } from "./operation-log.dto"
@@ -31,6 +32,7 @@ export class OperationLogController {
      * @param {GetListRequestDto} query 查询参数
      * @returns {Promise<SysOperationLog[]>} 日志列表
      */
+    @Permission("system:operationLog:read")
     @Get("getList")
     public async getList (@Query() query: GetListRequestDto): Promise<SysOperationLog[]> {
 
@@ -47,6 +49,7 @@ export class OperationLogController {
      * @param {GetPageListRequestDto} query 查询参数
      * @returns {Promise<PaginationResponseDto<SysOperationLog>>} 日志列表和总数
      */
+    @Permission("system:operationLog:read")
     @Get("getPageList")
     public async getPageList (@Query() query: GetPageListRequestDto): Promise<PaginationResponseDto<SysOperationLog>> {
 
@@ -63,6 +66,7 @@ export class OperationLogController {
      * @param {BatchDeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:operationLog:delete")
     @Post("batchDelete")
     public async batchDelete (@Body() body: BatchDeleteRequestDto): Promise<void> {
 
@@ -77,6 +81,7 @@ export class OperationLogController {
      *
      * @returns {Promise<void>}
      */
+    @Permission("system:operationLog:delete")
     @Post("deleteAll")
     public async deleteAll (): Promise<void> {
 

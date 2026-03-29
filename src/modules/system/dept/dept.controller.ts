@@ -5,7 +5,7 @@
 import { Controller, Get, Post, Body, Query, Inject } from "@nestjs/common"
 import { InjectPinoLogger } from "nestjs-pino"
 
-import { User } from "@/decorators"
+import { Permission, User } from "@/decorators"
 
 import {
     GetListRequestDto,
@@ -39,6 +39,7 @@ export class DeptController {
      * @param {GetListRequestDto} query 查询参数
      * @returns {Promise<Omit<SysDept, "deletedAt">[]>} 部门列表
      */
+    @Permission("system:dept:read")
     @Get("getList")
     public async getList (@Query() query: GetListRequestDto): Promise<Omit<SysDept, "deletedAt">[]> {
 
@@ -55,6 +56,7 @@ export class DeptController {
      * @param {GetTreeRequestDto} query 查询参数
      * @returns {Promise<(Omit<SysDept, "deletedAt"> & { children: Omit<SysDept, "deletedAt">[] })[]>} 部门树
      */
+    @Permission("system:dept:read")
     @Get("getTree")
     public async getTree (
         @Query() query: GetTreeRequestDto
@@ -73,6 +75,7 @@ export class DeptController {
      * @param {GetDetailRequestDto} query 查询参数
      * @returns {Promise<Omit<SysDept, "deletedAt">>} 部门详情
      */
+    @Permission("system:dept:read")
     @Get("getDetail")
     public async getDetail (@Query() query: GetDetailRequestDto): Promise<Omit<SysDept, "deletedAt">> {
 
@@ -90,6 +93,7 @@ export class DeptController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:dept:create")
     @Post("create")
     public async create (@Body() body: CreateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -106,6 +110,7 @@ export class DeptController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
+    @Permission("system:dept:update")
     @Post("update")
     public async update (@Body() body: UpdateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -121,6 +126,7 @@ export class DeptController {
      * @param {DeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
+    @Permission("system:dept:delete")
     @Post("delete")
     public async delete (@Body() body: DeleteRequestDto): Promise<void> {
 

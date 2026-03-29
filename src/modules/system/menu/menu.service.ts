@@ -59,12 +59,28 @@ export class MenuService {
 
         this.logger.info("[getList] started")
 
-        const where = this.buildQueryWhere(params)
-        const data = await this.menuRepository.findMany({ where })
-        const filtered = await this.filterMenusByUserId(user?.id, data)
+        let data: SysMenu[] = []
+
+        if (user?.id) {
+
+            const allowedMenuIds = await this.findMenuIdsByUserId(user.id)
+
+            if (allowedMenuIds.length > 0) {
+
+                const where = this.buildQueryWhere(params)
+                data = await this.menuRepository.findMany({
+                    where: {
+                        ...where,
+                        id: { in: allowedMenuIds }
+                    }
+                })
+
+            }
+
+        }
 
         this.logger.info("[getList] completed")
-        return filtered
+        return data
 
     }
 
@@ -79,11 +95,27 @@ export class MenuService {
 
         this.logger.info("[getTree] started")
 
-        const where = this.buildQueryWhere(params)
-        const data = await this.menuRepository.findMany({ where })
-        const filtered = await this.filterMenusByUserId(user?.id, data)
+        let tree: (SysMenu & { children: SysMenu[] })[] = []
 
-        const tree = this.buildTree(filtered)
+        if (user?.id) {
+
+            const allowedMenuIds = await this.findMenuIdsByUserId(user.id)
+
+            if (allowedMenuIds.length > 0) {
+
+                const where = this.buildQueryWhere(params)
+                const data = await this.menuRepository.findMany({
+                    where: {
+                        ...where,
+                        id: { in: allowedMenuIds }
+                    }
+                })
+
+                tree = this.buildTree(data)
+
+            }
+
+        }
 
         this.logger.info("[getTree] completed")
         return tree
@@ -150,7 +182,18 @@ export class MenuService {
             createdBy: user?.username
         }
 
-        await this.menuRepository.create(createData)
+        const createdMenu = await this.menuRepository.create(createData)
+
+        if (params.parentId) {
+
+            const roleIds = await this.roleMenuService.findRoleIdsByMenuId(params.parentId)
+            if (roleIds.length > 0) {
+
+                await this.roleMenuService.setRolesByMenuId(createdMenu.id, roleIds)
+
+            }
+
+        }
 
         this.logger.info("[create] completed")
 
@@ -172,9 +215,11 @@ export class MenuService {
 
         const existingMenu = await this.checkMenuExists(params.id)
 
-        if (params.parentId && params.parentId !== existingMenu.parentId) {
+        const parentId = params.parentId ?? null
+        const parentIdChanged = parentId !== existingMenu.parentId
+        if (parentId && parentIdChanged) {
 
-            await this.checkMenuExists(params.parentId)
+            await this.checkMenuExists(parentId)
 
         }
 
@@ -196,10 +241,23 @@ export class MenuService {
 
         }
 
+        if (parentIdChanged) {
+
+            let roleIds: number[] = []
+            if (parentId) {
+
+                roleIds = await this.roleMenuService.findRoleIdsByMenuId(parentId)
+
+            }
+            await this.roleMenuService.setRolesByMenuId(params.id, roleIds)
+
+        }
+
         const { id, ...updateData } = params
 
         await this.menuRepository.updateById(id, {
             ...updateData,
+            parentId,
             updatedBy: user?.username
         })
 
@@ -243,10 +301,35 @@ export class MenuService {
      */
     public async existsByIds (ids: number[]): Promise<boolean> {
 
-        this.logger.info("[existsByIds] started")
         const count = await this.menuRepository.count({ where: { id: { in: ids } } })
-        this.logger.info("[existsByIds] completed")
         return count === ids.length
+
+    }
+
+    /**
+     * 根据用户ID获取拥有的权限标识集合
+     *
+     * @param {number} userId 用户ID
+     * @returns {Promise<string[]>} 权限标识数组
+     */
+    public async findPermsByUserId (userId: number): Promise<string[]> {
+
+        const menuIds = await this.findMenuIdsByUserId(userId)
+
+        if (menuIds.length === 0) {
+
+            return []
+
+        }
+
+        const menus = await this.menuRepository.findMany({
+            where: {
+                id: { in: menuIds },
+                perms: { not: null }
+            }
+        })
+
+        return menus.map(menu => menu.perms as string)
 
     }
 
@@ -268,30 +351,22 @@ export class MenuService {
     }
 
     /**
-     * 根据用户ID过滤有权限的菜单列表
+     * 根据用户ID获取允许访问的菜单ID集合
      *
-     * @param {number | void} userId 用户ID
-     * @param {SysMenu[]} menus 待过滤的菜单列表
-     * @returns {Promise<SysMenu[]>} 过滤后的菜单列表
+     * @param {number} userId 用户ID
+     * @returns {Promise<number[]>} 菜单ID数组
      */
-    private async filterMenusByUserId (userId: number | void, menus: SysMenu[]): Promise<SysMenu[]> {
-
-        if (!userId) {
-
-            return []
-
-        }
+    private async findMenuIdsByUserId (userId: number): Promise<number[]> {
 
         const roleIds = await this.userRoleService.findRoleIdsByUserId(userId)
+
         if (roleIds.length === 0) {
 
             return []
 
         }
 
-        const menuIds = await this.roleMenuService.findMenuIdsByRoleIds(roleIds)
-        const allowedMenuIdSet = new Set(menuIds)
-        return menus.filter(menu => allowedMenuIdSet.has(menu.id))
+        return this.roleMenuService.findMenuIdsByRoleIds(roleIds)
 
     }
 

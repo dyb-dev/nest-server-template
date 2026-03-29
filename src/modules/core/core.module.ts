@@ -4,7 +4,6 @@
 
 import { HttpModule } from "@nestjs/axios"
 import { BullModule } from "@nestjs/bullmq"
-import { EventEmitterModule } from "@nestjs/event-emitter"
 import { seconds, ThrottlerModule } from "@nestjs/throttler"
 import { ClsPluginTransactional } from "@nestjs-cls/transactional"
 import { TransactionalAdapterPrisma } from "@nestjs-cls/transactional-adapter-prisma"
@@ -32,10 +31,6 @@ export class CoreModule {
             imports: [
                 LoggerModule.forRoot(),
 
-                EventEmitterModule.forRoot({
-                    // 全局模块
-                    global: true
-                }),
                 HttpModule.register({
                     // 全局模块
                     global: true,
