@@ -12,8 +12,9 @@ import { InjectPinoLogger } from "nestjs-pino"
 import { BusinessLogicException, RefreshTokenException } from "@/exceptions"
 
 import { DatabaseService } from "../core"
+import { LoginLogService, LoginSessionService } from "../monitor"
 import { CaptchaService, CsrfService } from "../shared"
-import { ConfigService, LoginLogService, LoginSessionService, UserService } from "../system"
+import { ConfigService, UserService } from "../system"
 
 import { LoginRequestDto, RegisterRequestDto } from "./auth.dto"
 
@@ -63,8 +64,8 @@ export class AuthService {
     private readonly loginLogService: LoginLogService
 
     /** 登录会话服务 */
-    @Inject(LoginSessionService)
-    private readonly loginSessionService: LoginSessionService
+    @Inject(forwardRef(() => LoginSessionService))
+    private readonly loginSessionService: TWrapper<LoginSessionService>
 
     /** 用户服务 */
     @Inject(UserService)

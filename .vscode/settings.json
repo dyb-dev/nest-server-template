@@ -287,7 +287,10 @@
         "depts",
         "dtos",
         "bullmq",
-        "HMAC"
+        "HMAC",
+        "swaptotal",
+        "swapused",
+        "swapfree"
     ]
 
     // #endregion

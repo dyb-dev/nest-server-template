@@ -8,13 +8,8 @@ import { ConfigModule } from "./config"
 import { DeptModule } from "./dept"
 import { DictItemModule } from "./dict-item"
 import { DictTypeModule } from "./dict-type"
-import { JobModule } from "./job"
-import { JobLogModule } from "./job-log"
-import { LoginLogModule } from "./login-log"
-import { LoginSessionModule } from "./login-session"
 import { MenuModule } from "./menu"
 import { NoticeModule } from "./notice"
-import { OperationLogModule } from "./operation-log"
 import { PostModule } from "./post"
 import { ProfileModule } from "./profile"
 import { RoleModule } from "./role"
@@ -27,46 +22,36 @@ import { UserRoleModule } from "./user-role"
 /** 系统模块 */
 @Module({
     imports: [
-        LoginLogModule,
-        LoginSessionModule,
-        OperationLogModule,
-        UserModule,
         ConfigModule,
-        DictTypeModule,
-        DictItemModule,
-        JobModule,
-        JobLogModule,
-        NoticeModule,
         DeptModule,
+        DictItemModule,
+        DictTypeModule,
+        MenuModule,
+        NoticeModule,
         PostModule,
-        UserPostModule,
+        ProfileModule,
         RoleModule,
         RoleDeptModule,
-        UserRoleModule,
-        MenuModule,
         RoleMenuModule,
-        ProfileModule
+        UserModule,
+        UserPostModule,
+        UserRoleModule
     ],
     exports: [
-        LoginLogModule,
-        LoginSessionModule,
-        OperationLogModule,
-        UserModule,
         ConfigModule,
-        DictTypeModule,
-        DictItemModule,
-        JobModule,
-        JobLogModule,
-        NoticeModule,
         DeptModule,
+        DictItemModule,
+        DictTypeModule,
+        MenuModule,
+        NoticeModule,
         PostModule,
-        UserPostModule,
+        ProfileModule,
         RoleModule,
         RoleDeptModule,
-        UserRoleModule,
-        MenuModule,
         RoleMenuModule,
-        ProfileModule
+        UserModule,
+        UserPostModule,
+        UserRoleModule
     ]
 })
 export class SystemModule {}

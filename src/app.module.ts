@@ -12,14 +12,14 @@ import { GlobalExceptionFilter } from "@/exception-filters"
 import { CsrfGuard, AuthGuard, ReplayGuard, PermissionGuard } from "@/guards"
 import { CryptoInterceptor, LoggerInterceptor, ResponseInterceptor, SensitiveFieldsInterceptor } from "@/interceptors"
 import { LoggerMiddleware } from "@/middlewares"
-import { CoreModule, SharedModule, SystemModule, AuthModule } from "@/modules"
+import { CoreModule, SharedModule, SchedulerModule, MonitorModule, SystemModule, AuthModule } from "@/modules"
 import { ValidationPipe } from "@/pipes"
 
 import type { MiddlewareConsumer, NestModule } from "@nestjs/common"
 
 /** App 模块 */
 @Module({
-    imports: [CoreModule.forRoot(), SharedModule, SystemModule, AuthModule],
+    imports: [CoreModule.forRoot(), SharedModule, SchedulerModule, MonitorModule, SystemModule, AuthModule],
     providers: [
         {
             provide: APP_GUARD,

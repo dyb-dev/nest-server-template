@@ -4,8 +4,8 @@
 
 import { forwardRef, Module } from "@nestjs/common"
 
+import { LoginSessionModule } from "../../monitor"
 import { DeptModule } from "../dept"
-import { LoginSessionModule } from "../login-session"
 import { PostModule } from "../post"
 import { RoleModule } from "../role"
 import { RoleDeptModule } from "../role-dept"
@@ -19,7 +19,7 @@ import { UserService } from "./user.service"
 /** 用户模块 */
 @Module({
     imports: [
-        LoginSessionModule,
+        forwardRef(() => LoginSessionModule),
         forwardRef(() => DeptModule),
         PostModule,
         UserPostModule,

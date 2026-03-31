@@ -11,8 +11,8 @@ import { PaginationResponseDto } from "@/dtos"
 import { BusinessLogicException } from "@/exceptions"
 
 import { DatabaseService } from "../../core"
+import { LoginSessionService } from "../../monitor"
 import { DeptService } from "../dept"
-import { LoginSessionService } from "../login-session"
 import { PostService } from "../post"
 import { RoleService } from "../role"
 import { RoleDeptService } from "../role-dept"
@@ -50,8 +50,8 @@ export class UserService {
     private readonly userRepository: UserRepository
 
     /** 登录会话服务 */
-    @Inject(LoginSessionService)
-    private readonly loginSessionService: LoginSessionService
+    @Inject(forwardRef(() => LoginSessionService))
+    private readonly loginSessionService: TWrapper<LoginSessionService>
 
     /** 部门服务 */
     @Inject(forwardRef(() => DeptService))

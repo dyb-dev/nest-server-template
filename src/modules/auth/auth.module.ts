@@ -5,8 +5,9 @@
 import { forwardRef, Module } from "@nestjs/common"
 import { JwtModule } from "@nestjs/jwt"
 
+import { LoginLogModule, LoginSessionModule } from "../monitor"
 import { CaptchaModule, CsrfModule } from "../shared"
-import { ConfigModule, LoginLogModule, LoginSessionModule, UserModule } from "../system"
+import { ConfigModule, UserModule } from "../system"
 
 import { AuthController } from "./auth.controller"
 import { AuthService } from "./auth.service"
@@ -18,7 +19,7 @@ import { AuthService } from "./auth.service"
         CaptchaModule,
         forwardRef(() => CsrfModule),
         LoginLogModule,
-        LoginSessionModule,
+        forwardRef(() => LoginSessionModule),
         UserModule,
         ConfigModule
     ],

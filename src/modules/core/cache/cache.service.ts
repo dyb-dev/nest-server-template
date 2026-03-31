@@ -22,6 +22,12 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache
 
+    private get redisClient () {
+
+        return this.cacheManager.stores[0].store.client
+
+    }
+
     /** HOOKS: 模块初始化 */
     public async onModuleInit (): Promise<void> {
 
@@ -29,13 +35,10 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
 
             this.logger.info("Cache connecting...")
 
-            /** redis 客户端 */
-            const redisClient = this.cacheManager.stores[0].store.client
-            await redisClient.connect()
+            await this.redisClient.connect()
 
             this.logger.info("Cache connected")
 
-            // 注册事件监听器
             this.registerEventListeners()
 
         }
@@ -71,20 +74,17 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     /** FUN: 注册事件监听器 */
     private registerEventListeners (): void {
 
-        /** redis 客户端 */
-        const redisClient = this.cacheManager.stores[0].store.client
-
         // 连接建立事件
-        redisClient.on("connect", () => this.logger.info("Cache connecting..."))
+        this.redisClient.on("connect", () => this.logger.info("Cache connecting..."))
 
         // 就绪事件
-        redisClient.on("ready", () => this.logger.info("Cache connected"))
+        this.redisClient.on("ready", () => this.logger.info("Cache connected"))
 
         // 重连事件
-        redisClient.on("reconnecting", () => this.logger.warn("Cache reconnecting"))
+        this.redisClient.on("reconnecting", () => this.logger.warn("Cache reconnecting"))
 
         // 错误事件 - 自动尝试重连
-        redisClient.on("error", (error: Error) => this.logger.error(error, "Cache error"))
+        this.redisClient.on("error", (error: Error) => this.logger.error(error, "Cache error"))
 
     }
 
