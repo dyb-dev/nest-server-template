@@ -1,6 +1,6 @@
 {
     "name": "nest-server-template",
-    "version": "1.10.0",
+    "version": "1.11.0",
     "description": "基于`nest全家桶`搭建的服务端模板",
     "author": "dyb-dev",
     "license": "MIT",

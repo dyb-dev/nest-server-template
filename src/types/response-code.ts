@@ -31,5 +31,7 @@ export const enum EResponseCode {
     /** 服务器内部错误 */
     InternalServerError = 5000,
     /** 数据访问错误 */
-    DataAccessError = 5001
+    DataAccessError = 5001,
+    /** 健康检查失败 */
+    HealthCheckFailed = 5002
 }

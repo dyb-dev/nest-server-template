@@ -10,7 +10,6 @@ import { CacheService } from "./cache.service"
 /** 缓存监控模块 */
 @Module({
     controllers: [CacheController],
-    providers: [CacheService],
-    exports: [CacheService]
+    providers: [CacheService]
 })
 export class CacheModule {}

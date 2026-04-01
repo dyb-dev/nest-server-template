@@ -10,6 +10,8 @@ export * from "./business-logic.exception"
 export * from "./crypto-operation.exception"
 /** 导出 CSRF 令牌异常 */
 export * from "./csrf-token.exception"
+/** 导出 健康检查异常 */
+export * from "./health-check.exception"
 /** 导出 权限不足异常 */
 export * from "./insufficient-permissions.exception"
 /** 导出 参数验证异常 */

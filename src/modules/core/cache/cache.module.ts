@@ -47,7 +47,7 @@ export class CacheModule {
                 })
             ],
             providers: [CacheService],
-            exports: [CacheManagerModule]
+            exports: [CacheManagerModule, CacheService]
         }
 
     }

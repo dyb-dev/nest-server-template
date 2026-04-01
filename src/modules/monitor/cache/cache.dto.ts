@@ -9,49 +9,34 @@ export class GetInfoResponseDto {
 
     /** Redis 版本 */
     version: string
-
     /** 运行时长（秒） */
     uptimeInSeconds: number
-
     /** 运行时长（天） */
     uptimeInDays: number
-
     /** 已连接客户端数 */
     connectedClients: number
-
     /** 内存使用量（bytes） */
     usedMemory: number
-
     /** 内存使用峰值（bytes） */
     usedMemoryPeak: number
-
     /** 系统总内存（bytes） */
     totalSystemMemory: number
-
     /** Redis 内存占系统内存比率（%） */
     usedMemoryRate: number
-
     /** 内存碎片率 */
     memFragmentationRatio: number
-
     /** 总命令执行次数 */
     totalCommandsProcessed: number
-
     /** 总连接次数 */
     totalConnectionsReceived: number
-
     /** 已过期键总数 */
     expiredKeys: number
-
     /** 缓存命中次数 */
     keyspaceHits: number
-
     /** 缓存未命中次数 */
     keyspaceMisses: number
-
     /** 缓存命中率（%） */
     hitRate: number
-
     /** 键总数 */
     totalKeys: number
 

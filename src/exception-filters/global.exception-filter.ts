@@ -14,6 +14,7 @@ import {
     BusinessLogicException,
     CryptoOperationException,
     CsrfTokenException,
+    HealthCheckException,
     InsufficientPermissionsException,
     ParameterValidationException,
     RefreshTokenException,
@@ -39,6 +40,7 @@ type TException =
     | CryptoOperationException
     | ParameterValidationException
     | BusinessLogicException
+    | HealthCheckException
     | PrismaClientKnownRequestError
     | HttpException
     | Error
@@ -135,7 +137,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
         }
 
-        // CSRF 令牌无效 | 访问令牌无效 | 重放请求已拒绝 | 权限不足 | 刷新令牌无效 | 加解密操作错误 | 参数验证错误 | 业务逻辑错误
+        // CSRF 令牌无效 | 访问令牌无效 | 重放请求已拒绝 | 权限不足 | 刷新令牌无效 | 加解密操作错误 | 参数验证错误 | 业务逻辑错误 | 健康检查异常
         if (
             exception instanceof CsrfTokenException ||
             exception instanceof AccessTokenException ||
@@ -144,7 +146,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             exception instanceof RefreshTokenException ||
             exception instanceof CryptoOperationException ||
             exception instanceof ParameterValidationException ||
-            exception instanceof BusinessLogicException
+            exception instanceof BusinessLogicException ||
+            exception instanceof HealthCheckException
         ) {
 
             const status = exception.getStatus() as EResponseCode

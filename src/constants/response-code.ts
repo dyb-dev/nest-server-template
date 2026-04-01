@@ -23,7 +23,8 @@ export const RESPONSE_CODE_TO_MESSAGE: Record<EResponseCode, string> = {
     [EResponseCode.CryptoOperationError]: "crypto operation error",
 
     [EResponseCode.InternalServerError]: "internal server error",
-    [EResponseCode.DataAccessError]: "data access error"
+    [EResponseCode.DataAccessError]: "data access error",
+    [EResponseCode.HealthCheckFailed]: "health check failed"
 }
 
 /** 响应码 -> HTTP 状态码 */
@@ -43,5 +44,6 @@ export const RESPONSE_CODE_TO_HTTP_STATUS: Record<EResponseCode, HttpStatus> = {
     [EResponseCode.CryptoOperationError]: HttpStatus.BAD_REQUEST,
 
     [EResponseCode.InternalServerError]: HttpStatus.INTERNAL_SERVER_ERROR,
-    [EResponseCode.DataAccessError]: HttpStatus.INTERNAL_SERVER_ERROR
+    [EResponseCode.DataAccessError]: HttpStatus.INTERNAL_SERVER_ERROR,
+    [EResponseCode.HealthCheckFailed]: HttpStatus.SERVICE_UNAVAILABLE
 }
