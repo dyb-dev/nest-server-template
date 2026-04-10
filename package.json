@@ -1,6 +1,6 @@
 {
     "name": "nest-server-template",
-    "version": "1.11.0",
+    "version": "1.12.0",
     "description": "基于`nest全家桶`搭建的服务端模板",
     "author": "dyb-dev",
     "license": "MIT",
@@ -12,13 +12,16 @@
         "dev": "vite",
         "build": "npm run ts-check && npm run build-only",
         "build-only": "vite build",
-        "start": "node ./dist/main.js",
+        "start": "cross-env NODE_ENV=production node ./dist/main.js",
         "ts-check": "tsc --build --force",
         "release": "project-cli release",
-        "format": "prettier --write . && eslint --fix .",
-        "prisma:dev": "prisma migrate dev && prisma generate",
-        "prisma:deploy": "prisma migrate deploy && prisma generate",
-        "prisma:studio": "prisma studio"
+        "format": "prisma format && prettier --write . && eslint --fix .",
+        "migrate:reset": "cross-env NODE_ENV=development prisma migrate reset",
+        "migrate:dev": "cross-env NODE_ENV=development prisma migrate dev && prisma generate",
+        "migrate:deploy": "cross-env NODE_ENV=production prisma migrate deploy && prisma generate",
+        "db:seed:dev": "cross-env NODE_ENV=development prisma db seed",
+        "db:seed:deploy": "cross-env NODE_ENV=production prisma db seed",
+        "studio": "cross-env NODE_ENV=development prisma studio"
     },
     "engines": {
         "node": ">=22.0.0",
@@ -45,12 +48,14 @@
         "@types/multer": "^2.0.0",
         "@types/node": "^22.10.7",
         "@types/pg": "^8.16.0",
+        "cross-env": "^10.1.0",
         "eslint": "^8.57.1",
         "husky": "^9.1.7",
         "lint-staged": "^16.2.7",
         "prettier": "^3.4.2",
         "prettier-eslint": "^16.4.2",
         "prisma": "^7.1.0",
+        "tsx": "^4.21.0",
         "typescript": "^5.7.3",
         "vite": "^7.2.7",
         "vite-plugin-node": "^7.0.0"
@@ -100,6 +105,9 @@
         "ua-parser-js": "^2.0.9"
     },
     "lint-staged": {
+        "*.prisma": [
+            "prisma format"
+        ],
         "*": [
             "prettier --write",
             "eslint --fix"

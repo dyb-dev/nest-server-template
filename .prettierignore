@@ -16,7 +16,8 @@ logs
 # 忽略项目文件
 dist
 node_modules
-/prisma
+*.sql
+*.prisma
 /src/prisma
 /uploads
 .*

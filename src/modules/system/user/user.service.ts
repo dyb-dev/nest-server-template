@@ -12,6 +12,7 @@ import { BusinessLogicException } from "@/exceptions"
 
 import { DatabaseService } from "../../core"
 import { LoginSessionService } from "../../monitor"
+import { ConfigService } from "../config"
 import { DeptService } from "../dept"
 import { PostService } from "../post"
 import { RoleService } from "../role"
@@ -76,6 +77,10 @@ export class UserService {
     /** 角色部门服务 */
     @Inject(RoleDeptService)
     private readonly roleDeptService: RoleDeptService
+
+    /** 参数配置服务 */
+    @Inject(ConfigService)
+    private readonly configService: ConfigService
 
     /**
      * 获取用户列表
@@ -205,11 +210,23 @@ export class UserService {
 
         if (params.deptId) {
 
-            await this.checkDeptExists(params.deptId)
+            await this.checkActiveDeptExists(params.deptId)
 
         }
 
-        const hashedPassword = await this.hashPassword(params.password)
+        let rawPassword = params.password
+        if (!rawPassword) {
+
+            const config = await this.configService.findByKey("sys.user.initPassword")
+            if (!config) {
+
+                throw new BusinessLogicException("用户初始密码未配置")
+
+            }
+            rawPassword = config.value
+
+        }
+        const hashedPassword = await this.hashPassword(rawPassword)
 
         const { postIds, roleIds, ...restParams } = params
 
@@ -242,6 +259,37 @@ export class UserService {
 
         const existingUser = await this.checkUserExists(params.id)
 
+        if (existingUser.isSystem) {
+
+            if (params.isActive !== void 0 && params.isActive !== existingUser.isActive) {
+
+                throw new BusinessLogicException("系统用户状态不允许修改")
+
+            }
+
+            if (params.roleIds) {
+
+                const existingRoleIds = await this.userRoleService.findRoleIdsByUserId(params.id)
+                const sortedExisting = existingRoleIds.sort()
+                const sortedParams = params.roleIds.sort()
+                const isSame =
+                    sortedParams.length === sortedExisting.length && sortedParams.every((id, i) => id === sortedExisting[i])
+                if (!isSame) {
+
+                    throw new BusinessLogicException("系统用户角色不允许修改")
+
+                }
+
+            }
+
+        }
+
+        if (!params.isActive && params.id === user?.id) {
+
+            throw new BusinessLogicException("不能禁用当前登录账号")
+
+        }
+
         if (params.email && params.email !== existingUser.email) {
 
             await this.checkEmailNotExists(params.email)
@@ -256,7 +304,7 @@ export class UserService {
 
         if (params.deptId && params.deptId !== existingUser.deptId) {
 
-            await this.checkDeptExists(params.deptId)
+            await this.checkActiveDeptExists(params.deptId)
 
         }
 
@@ -286,7 +334,13 @@ export class UserService {
 
         this.logger.info("[resetPassword] started")
 
-        await this.checkUserExists(params.id)
+        const existingUser = await this.checkUserExists(params.id)
+
+        if (existingUser.isSystem) {
+
+            throw new BusinessLogicException("系统用户密码不允许重置")
+
+        }
 
         const hashedPassword = await this.hashPassword(params.password)
 
@@ -320,6 +374,12 @@ export class UserService {
 
         }
 
+        if (!params.isActive && params.id === user?.id) {
+
+            throw new BusinessLogicException("不能禁用当前登录账号")
+
+        }
+
         await this.userRepository.updateById(params.id, {
             isActive: params.isActive,
             updatedBy: user?.username
@@ -333,18 +393,25 @@ export class UserService {
      * 删除用户
      *
      * @param {DeleteRequestDto} params 删除用户参数
+     * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
     @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
-    public async delete (params: DeleteRequestDto): Promise<void> {
+    public async delete (params: DeleteRequestDto, user: Request["user"]): Promise<void> {
 
         this.logger.info("[delete] started")
 
-        const user = await this.checkUserExists(params.id)
+        const existingUser = await this.checkUserExists(params.id)
 
-        if (user.isSystem) {
+        if (existingUser.isSystem) {
 
             throw new BusinessLogicException("系统用户不能删除")
+
+        }
+
+        if (params.id === user?.id) {
+
+            throw new BusinessLogicException("不能删除当前登录账号")
 
         }
 
@@ -365,27 +432,34 @@ export class UserService {
      * 批量删除用户
      *
      * @param {BatchDeleteRequestDto} params 批量删除用户参数
+     * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
     @Transactional<TransactionalAdapterPrisma<DatabaseService>>()
-    public async batchDelete (params: BatchDeleteRequestDto): Promise<void> {
+    public async batchDelete (params: BatchDeleteRequestDto, user: Request["user"]): Promise<void> {
 
         this.logger.info("[batchDelete] started")
 
-        const users = await this.userRepository.findMany({
+        const existingUsers = await this.userRepository.findMany({
             where: { id: { in: params.ids } }
         })
 
-        if (users.length !== params.ids.length) {
+        if (existingUsers.length !== params.ids.length) {
 
             throw new BusinessLogicException("部分用户不存在")
 
         }
 
-        const hasSystemUser = users.some(user => user.isSystem)
+        const hasSystemUser = existingUsers.some(user => user.isSystem)
         if (hasSystemUser) {
 
             throw new BusinessLogicException("不能删除系统用户")
+
+        }
+
+        if (user?.id && params.ids.includes(user.id)) {
+
+            throw new BusinessLogicException("不能删除当前登录账号")
 
         }
 
@@ -401,6 +475,24 @@ export class UserService {
         })
 
         this.logger.info("[batchDelete] completed")
+
+    }
+
+    /**
+     * 获取激活用户列表
+     *
+     * @returns {Promise<Omit<SysUser, "password" | "deletedAt">[]>} 激活用户列表
+     */
+    public async getActiveList (): Promise<Omit<SysUser, "password" | "deletedAt">[]> {
+
+        this.logger.info("[getActiveList] started")
+
+        const data = await this.userRepository.findMany({
+            where: { isActive: true }
+        })
+
+        this.logger.info("[getActiveList] completed")
+        return data
 
     }
 
@@ -679,14 +771,14 @@ export class UserService {
     }
 
     /**
-     * 根据ID数组校验用户是否全部存在
+     * 根据ID数组校验用户是否全部存在且激活
      *
      * @param {number[]} ids 用户ID数组
-     * @returns {Promise<boolean>} 是否全部存在
+     * @returns {Promise<boolean>} 是否全部存在且激活
      */
-    public async existsByIds (ids: number[]): Promise<boolean> {
+    public async existsActiveByIds (ids: number[]): Promise<boolean> {
 
-        const count = await this.userRepository.count({ where: { id: { in: ids } } })
+        const count = await this.userRepository.count({ where: { id: { in: ids }, isActive: true } })
         return count === ids.length
 
     }
@@ -700,6 +792,19 @@ export class UserService {
     public async existsByDeptId (deptId: number): Promise<boolean> {
 
         const exists = await this.userRepository.exists({ deptId })
+        return exists
+
+    }
+
+    /**
+     * 根据ID数组校验是否存在系统用户
+     *
+     * @param {number[]} ids 用户ID数组
+     * @returns {Promise<boolean>} 是否存在系统用户
+     */
+    public async existsSystemByIds (ids: number[]): Promise<boolean> {
+
+        const exists = await this.userRepository.exists({ id: { in: ids }, isSystem: true })
         return exists
 
     }
@@ -775,7 +880,7 @@ export class UserService {
 
         }
 
-        const roles = await this.roleService.findByIds(roleIds)
+        const roles = await this.roleService.findActiveByIds(roleIds)
         if (roles.length === 0) {
 
             return []
@@ -892,18 +997,18 @@ export class UserService {
     }
 
     /**
-     * 检查部门是否存在
+     * 检查部门是否存在且激活
      *
      * @param {number} deptId 部门ID
      * @returns {Promise<void>}
-     * @throws {BusinessLogicException} 部门不存在时抛出异常
+     * @throws {BusinessLogicException} 部门不存在或被禁用时抛出异常
      */
-    private async checkDeptExists (deptId: number): Promise<void> {
+    private async checkActiveDeptExists (deptId: number): Promise<void> {
 
-        const exists = await this.deptService.existsByIds([deptId])
+        const exists = await this.deptService.existsActiveByIds([deptId])
         if (!exists) {
 
-            throw new BusinessLogicException("部门不存在")
+            throw new BusinessLogicException("部门不存在或已被禁用")
 
         }
 
@@ -926,10 +1031,10 @@ export class UserService {
 
         if (postIds.length > 0) {
 
-            const allExists = await this.postService.existsByIds(postIds)
+            const allExists = await this.postService.existsActiveByIds(postIds)
             if (!allExists) {
 
-                throw new BusinessLogicException("部分岗位不存在")
+                throw new BusinessLogicException("部分岗位不存在或已被禁用")
 
             }
 
@@ -956,10 +1061,10 @@ export class UserService {
 
         if (roleIds.length > 0) {
 
-            const allExists = await this.roleService.existsByIds(roleIds)
+            const allExists = await this.roleService.existsActiveByIds(roleIds)
             if (!allExists) {
 
-                throw new BusinessLogicException("部分角色不存在")
+                throw new BusinessLogicException("部分角色不存在或已被禁用")
 
             }
 

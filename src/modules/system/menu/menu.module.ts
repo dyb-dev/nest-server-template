@@ -2,8 +2,9 @@
  * @FileDesc: 菜单模块
  */
 
-import { Module } from "@nestjs/common"
+import { forwardRef, Module } from "@nestjs/common"
 
+import { RoleModule } from "../role"
 import { RoleMenuModule } from "../role-menu"
 import { UserRoleModule } from "../user-role"
 
@@ -13,7 +14,7 @@ import { MenuService } from "./menu.service"
 
 /** 菜单模块 */
 @Module({
-    imports: [RoleMenuModule, UserRoleModule],
+    imports: [forwardRef(() => RoleModule), RoleMenuModule, UserRoleModule],
     controllers: [MenuController],
     providers: [MenuRepository, MenuService],
     exports: [MenuService]

@@ -68,6 +68,17 @@ export class JobScheduler implements OnApplicationBootstrap, OnApplicationShutdo
     }
 
     /**
+     * 获取已注册 handler key 的集合
+     *
+     * @returns {string[]} 已注册 handler key 的集合
+     */
+    public getHandlerKeys (): string[] {
+
+        return Array.from(this.handlerMap.keys())
+
+    }
+
+    /**
      * 检查 handler 是否已注册
      *
      * @param {string} invokeTarget 调用目标 key

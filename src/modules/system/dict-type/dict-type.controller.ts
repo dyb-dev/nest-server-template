@@ -41,7 +41,7 @@ export class DictTypeController {
      * @param {GetListRequestDto} query 查询参数
      * @returns {Promise<SysDictType[]>} 字典类型列表
      */
-    @Permission("system:dictType:read")
+    @Permission("system:dict:read")
     @Get("getList")
     public async getList (@Query() query: GetListRequestDto): Promise<SysDictType[]> {
 
@@ -58,7 +58,7 @@ export class DictTypeController {
      * @param {GetPageListRequestDto} query 查询参数
      * @returns {Promise<PaginationResponseDto<SysDictType>>} 字典类型列表和总数
      */
-    @Permission("system:dictType:read")
+    @Permission("system:dict:read")
     @Get("getPageList")
     public async getPageList (@Query() query: GetPageListRequestDto): Promise<PaginationResponseDto<SysDictType>> {
 
@@ -75,7 +75,7 @@ export class DictTypeController {
      * @param {GetDetailRequestDto} query 查询参数
      * @returns {Promise<SysDictType>} 字典类型详情
      */
-    @Permission("system:dictType:read")
+    @Permission("system:dict:read")
     @Get("getDetail")
     public async getDetail (@Query() query: GetDetailRequestDto): Promise<SysDictType> {
 
@@ -93,7 +93,7 @@ export class DictTypeController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
-    @Permission("system:dictType:create")
+    @Permission("system:dict:create")
     @Post("create")
     public async create (@Body() body: CreateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -110,7 +110,7 @@ export class DictTypeController {
      * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
-    @Permission("system:dictType:update")
+    @Permission("system:dict:update")
     @Post("update")
     public async update (@Body() body: UpdateRequestDto, @User() user: Request["user"]): Promise<void> {
 
@@ -126,7 +126,7 @@ export class DictTypeController {
      * @param {DeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
-    @Permission("system:dictType:delete")
+    @Permission("system:dict:delete")
     @Post("delete")
     public async delete (@Body() body: DeleteRequestDto): Promise<void> {
 
@@ -142,7 +142,7 @@ export class DictTypeController {
      * @param {BatchDeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
-    @Permission("system:dictType:delete")
+    @Permission("system:dict:delete")
     @Post("batchDelete")
     public async batchDelete (@Body() body: BatchDeleteRequestDto): Promise<void> {
 

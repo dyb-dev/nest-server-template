@@ -166,7 +166,7 @@ export class ServerService {
         return {
             nodeVersion: process.version,
             pid: process.pid,
-            env: process.env.NODE_ENV ?? "unknown",
+            env: import.meta.env.MODE,
             uptime: Math.floor(process.uptime()),
             memory
         }

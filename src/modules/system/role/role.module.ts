@@ -22,7 +22,7 @@ import { RoleService } from "./role.service"
         RoleDeptModule,
         UserRoleModule,
         forwardRef(() => UserModule),
-        MenuModule,
+        forwardRef(() => MenuModule),
         RoleMenuModule
     ],
     controllers: [RoleController],

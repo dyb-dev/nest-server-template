@@ -5,6 +5,7 @@
 import { forwardRef, Module } from "@nestjs/common"
 
 import { LoginSessionModule } from "../../monitor"
+import { ConfigModule } from "../config"
 import { DeptModule } from "../dept"
 import { PostModule } from "../post"
 import { RoleModule } from "../role"
@@ -25,7 +26,8 @@ import { UserService } from "./user.service"
         UserPostModule,
         forwardRef(() => RoleModule),
         UserRoleModule,
-        RoleDeptModule
+        RoleDeptModule,
+        ConfigModule
     ],
     controllers: [UserController],
     providers: [UserRepository, UserService],

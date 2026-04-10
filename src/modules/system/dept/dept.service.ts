@@ -136,7 +136,7 @@ export class DeptService {
 
         if (params.leaderId) {
 
-            await this.checkLeaderExists(params.leaderId)
+            await this.checkActiveLeaderExists(params.leaderId)
 
         }
 
@@ -199,7 +199,7 @@ export class DeptService {
 
         if (params.leaderId && params.leaderId !== existingDept.leaderId) {
 
-            await this.checkLeaderExists(params.leaderId)
+            await this.checkActiveLeaderExists(params.leaderId)
 
         }
 
@@ -272,7 +272,13 @@ export class DeptService {
 
         const depts = await this.deptRepository.findMany({
             where: {
-                OR: [{ id: deptId }, { ancestors: { contains: String(deptId) } }]
+                OR: [
+                    { id: deptId },
+                    { ancestors: String(deptId) },
+                    { ancestors: { startsWith: `${deptId},` } },
+                    { ancestors: { endsWith: `,${deptId}` } },
+                    { ancestors: { contains: `,${deptId},` } }
+                ]
             }
         })
 
@@ -293,14 +299,14 @@ export class DeptService {
     }
 
     /**
-     * 根据ID数组校验部门是否全部存在
+     * 根据ID数组校验部门是否全部存在且激活
      *
      * @param {number[]} ids 部门ID数组
-     * @returns {Promise<boolean>} 是否全部存在
+     * @returns {Promise<boolean>} 是否全部存在且激活
      */
-    public async existsByIds (ids: number[]): Promise<boolean> {
+    public async existsActiveByIds (ids: number[]): Promise<boolean> {
 
-        const count = await this.deptRepository.count({ where: { id: { in: ids } } })
+        const count = await this.deptRepository.count({ where: { id: { in: ids }, isActive: true } })
         return count === ids.length
 
     }
@@ -358,9 +364,9 @@ export class DeptService {
         }
 
         const parent = await this.deptRepository.findById(parentId)
-        if (!parent) {
+        if (!parent || !parent.isActive) {
 
-            throw new BusinessLogicException("父级部门不存在")
+            throw new BusinessLogicException("父级部门不存在或已被禁用")
 
         }
 
@@ -391,18 +397,18 @@ export class DeptService {
     }
 
     /**
-     * 检查负责人是否存在
+     * 检查负责人是否存在且激活
      *
      * @param {number} leaderId 负责人用户ID
      * @returns {Promise<void>}
-     * @throws {BusinessLogicException} 用户不存在时抛出异常
+     * @throws {BusinessLogicException} 负责人不存在或已被禁用时抛出异常
      */
-    private async checkLeaderExists (leaderId: number): Promise<void> {
+    private async checkActiveLeaderExists (leaderId: number): Promise<void> {
 
-        const exists = await this.userService.existsByIds([leaderId])
+        const exists = await this.userService.existsActiveByIds([leaderId])
         if (!exists) {
 
-            throw new BusinessLogicException("负责人不存在")
+            throw new BusinessLogicException("负责人不存在或已被禁用")
 
         }
 
@@ -430,7 +436,7 @@ export class DeptService {
     /**
      * 检查父级部门不是当前部门的子孙节点
      *
-     * @param {number} id 部门ID
+     * @param {number} id 当前部门ID
      * @param {number} parentId 父级部门ID
      * @returns {Promise<void>}
      * @throws {BusinessLogicException} 父级部门是子孙节点时抛出异常
@@ -438,9 +444,9 @@ export class DeptService {
     private async checkNotDescendant (id: number, parentId: number): Promise<void> {
 
         const parent = await this.deptRepository.findById(parentId)
-        if (!parent) {
+        if (!parent || !parent.isActive) {
 
-            throw new BusinessLogicException("父级部门不存在")
+            throw new BusinessLogicException("父级部门不存在或已被禁用")
 
         }
 
@@ -468,7 +474,7 @@ export class DeptService {
 
         const descendants = await this.deptRepository.findMany({
             where: {
-                ancestors: { startsWith: oldPrefix }
+                OR: [{ ancestors: oldPrefix }, { ancestors: { startsWith: `${oldPrefix},` } }]
             }
         })
 

@@ -228,14 +228,14 @@ export class PostService {
     }
 
     /**
-     * 根据ID数组校验岗位是否全部存在
+     * 根据ID数组校验岗位是否全部存在且激活
      *
      * @param {number[]} ids 岗位ID数组
-     * @returns {Promise<boolean>} 是否全部存在
+     * @returns {Promise<boolean>} 是否全部存在且激活
      */
-    public async existsByIds (ids: number[]): Promise<boolean> {
+    public async existsActiveByIds (ids: number[]): Promise<boolean> {
 
-        const count = await this.postRepository.count({ where: { id: { in: ids } } })
+        const count = await this.postRepository.count({ where: { id: { in: ids }, isActive: true } })
         return count === ids.length
 
     }

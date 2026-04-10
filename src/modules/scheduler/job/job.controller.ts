@@ -89,6 +89,22 @@ export class JobController {
     }
 
     /**
+     * 获取可用的调用目标列表
+     *
+     * @returns {Promise<string[]>} 可用的调用目标列表
+     */
+    @Permission("system:job:read")
+    @Get("getAvailableInvokeTargetList")
+    public async getAvailableInvokeTargetList (): Promise<string[]> {
+
+        this.logger.info("[getAvailableInvokeTargetList] started")
+        const data = await this.jobService.getAvailableInvokeTargetList()
+        this.logger.info("[getAvailableInvokeTargetList] completed")
+        return data
+
+    }
+
+    /**
      * 创建定时任务
      *
      * @param {CreateRequestDto} body 请求体

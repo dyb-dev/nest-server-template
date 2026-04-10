@@ -69,8 +69,8 @@ export class RoleService {
     private readonly userRoleService: UserRoleService
 
     /** 菜单服务 */
-    @Inject(MenuService)
-    private readonly menuService: MenuService
+    @Inject(forwardRef(() => MenuService))
+    private readonly menuService: TWrapper<MenuService>
 
     /** 角色菜单服务 */
     @Inject(RoleMenuService)
@@ -266,6 +266,18 @@ export class RoleService {
 
         await this.checkRoleExists(params.id)
 
+        const boundUserIds = await this.userRoleService.findUserIdsByRoleIds([params.id])
+        if (boundUserIds.length > 0) {
+
+            const hasSystemUser = await this.userService.existsSystemByIds(boundUserIds)
+            if (hasSystemUser) {
+
+                throw new BusinessLogicException("该角色下存在系统用户，不允许删除")
+
+            }
+
+        }
+
         await Promise.all([
             this.roleDeptService.deleteByRoleIds([params.id]),
             this.roleMenuService.deleteByRoleIds([params.id]),
@@ -296,6 +308,18 @@ export class RoleService {
         if (roles.length !== params.ids.length) {
 
             throw new BusinessLogicException("部分角色不存在")
+
+        }
+
+        const boundUserIds = await this.userRoleService.findUserIdsByRoleIds(params.ids)
+        if (boundUserIds.length > 0) {
+
+            const hasSystemUser = await this.userService.existsSystemByIds(boundUserIds)
+            if (hasSystemUser) {
+
+                throw new BusinessLogicException("部分角色下存在系统用户，不允许删除")
+
+            }
 
         }
 
@@ -372,14 +396,21 @@ export class RoleService {
 
         await this.checkRoleExists(params.roleId)
 
-        const allExists = await this.userService.existsByIds(params.userIds)
+        const allExists = await this.userService.existsActiveByIds(params.userIds)
         if (!allExists) {
 
-            throw new BusinessLogicException("部分用户不存在")
+            throw new BusinessLogicException("部分用户不存在或已被禁用")
 
         }
 
-        const boundUserIds = await this.userRoleService.findUserIdsByRoleId(params.roleId, params.userIds)
+        const hasSystemUser = await this.userService.existsSystemByIds(params.userIds)
+        if (hasSystemUser) {
+
+            throw new BusinessLogicException("系统用户角色不允许修改")
+
+        }
+
+        const boundUserIds = await this.userRoleService.findUserIdsByRoleIds([params.roleId], params.userIds)
         if (boundUserIds.length > 0) {
 
             throw new BusinessLogicException("部分用户已绑定此角色")
@@ -412,6 +443,13 @@ export class RoleService {
 
         }
 
+        const isSystemUser = await this.userService.existsSystemByIds([params.userId])
+        if (isSystemUser) {
+
+            throw new BusinessLogicException("系统用户角色不允许修改")
+
+        }
+
         await this.userRoleService.deleteUsersByRoleId(params.roleId, [params.userId])
 
         this.logger.info("[unbindUser] completed")
@@ -431,10 +469,17 @@ export class RoleService {
 
         await this.checkRoleExists(params.roleId)
 
-        const boundUserIds = await this.userRoleService.findUserIdsByRoleId(params.roleId, params.userIds)
+        const boundUserIds = await this.userRoleService.findUserIdsByRoleIds([params.roleId], params.userIds)
         if (boundUserIds.length !== params.userIds.length) {
 
             throw new BusinessLogicException("部分用户未绑定此角色")
+
+        }
+
+        const hasSystemUser = await this.userService.existsSystemByIds(params.userIds)
+        if (hasSystemUser) {
+
+            throw new BusinessLogicException("系统用户角色不允许修改")
 
         }
 
@@ -445,27 +490,27 @@ export class RoleService {
     }
 
     /**
-     * 根据角色ID数组查询角色列表
+     * 根据角色ID数组查询已激活的角色列表
      *
      * @param {number[]} ids 角色ID数组
-     * @returns {Promise<Omit<SysRole, "deletedAt">[]>} 角色列表
+     * @returns {Promise<Omit<SysRole, "deletedAt">[]>} 已激活的角色列表
      */
-    public async findByIds (ids: number[]): Promise<Omit<SysRole, "deletedAt">[]> {
+    public async findActiveByIds (ids: number[]): Promise<Omit<SysRole, "deletedAt">[]> {
 
-        const data = await this.roleRepository.findMany({ where: { id: { in: ids } } })
+        const data = await this.roleRepository.findMany({ where: { id: { in: ids }, isActive: true } })
         return data
 
     }
 
     /**
-     * 根据ID数组校验角色是否全部存在
+     * 根据ID数组校验角色是否全部存在且激活
      *
      * @param {number[]} ids 角色ID数组
-     * @returns {Promise<boolean>} 是否全部存在
+     * @returns {Promise<boolean>} 是否全部存在且激活
      */
-    public async existsByIds (ids: number[]): Promise<boolean> {
+    public async existsActiveByIds (ids: number[]): Promise<boolean> {
 
-        const count = await this.roleRepository.count({ where: { id: { in: ids } } })
+        const count = await this.roleRepository.count({ where: { id: { in: ids }, isActive: true } })
         return count === ids.length
 
     }
@@ -574,10 +619,10 @@ export class RoleService {
 
         if (deptIds.length > 0) {
 
-            const allExists = await this.deptService.existsByIds(deptIds)
+            const allExists = await this.deptService.existsActiveByIds(deptIds)
             if (!allExists) {
 
-                throw new BusinessLogicException("部分部门不存在")
+                throw new BusinessLogicException("部分部门不存在或已被禁用")
 
             }
 
@@ -604,10 +649,10 @@ export class RoleService {
 
         if (menuIds.length > 0) {
 
-            const allExists = await this.menuService.existsByIds(menuIds)
+            const allExists = await this.menuService.existsActiveByIds(menuIds)
             if (!allExists) {
 
-                throw new BusinessLogicException("部分菜单不存在")
+                throw new BusinessLogicException("部分菜单不存在或已被禁用")
 
             }
 

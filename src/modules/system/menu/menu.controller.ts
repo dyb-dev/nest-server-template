@@ -139,4 +139,20 @@ export class MenuController {
 
     }
 
+    /**
+     * 获取激活菜单树
+     *
+     * @returns {Promise<(SysMenu & { children: SysMenu[] })[]>} 激活菜单树
+     */
+    @Permission("system:menu:read")
+    @Get("getActiveTree")
+    public async getActiveTree (): Promise<(SysMenu & { children: SysMenu[] })[]> {
+
+        this.logger.info("[getActiveTree] started")
+        const data = await this.menuService.getActiveTree()
+        this.logger.info("[getActiveTree] completed")
+        return data
+
+    }
+
 }

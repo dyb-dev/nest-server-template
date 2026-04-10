@@ -29,6 +29,7 @@
     "git.autofetch": true,
     "search.exclude": {
         "**/dist": true,
+        "**/.claude": true,
         "**/.history": true,
         "**/cache": true,
         "*-lock.*": true

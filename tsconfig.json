@@ -4,8 +4,8 @@
 
 {
     "extends": "@dyb-dev/ts-config/node",
-    "include": ["src/**/*.ts", "src/**/*.d.ts", "prisma.config.ts", "vite.config.ts"],
-    "exclude": ["node_modules", "**/node_modules", ".history"],
+    "include": ["prisma/**/*.ts", "src/**/*.ts", "src/**/*.d.ts", "prisma.config.ts", "vite.config.ts"],
+    "exclude": ["node_modules", "**/node_modules", ".claude", ".history"],
     "compilerOptions": {
         // 指定要包含的类型定义文件
         "types": ["vite/client", "@dyb-dev/ts-config/types", "@types/multer"],

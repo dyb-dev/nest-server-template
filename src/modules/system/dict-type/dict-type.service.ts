@@ -247,6 +247,25 @@ export class DictTypeService {
     }
 
     /**
+     * 检查字典类型是否存在且激活
+     *
+     * @param {number} id 类型ID
+     * @returns {Promise<SysDictType>} 字典类型信息
+     * @throws {BusinessLogicException} 字典类型不存在或已被禁用时抛出异常
+     */
+    public async checkActiveDictTypeExists (id: number): Promise<SysDictType> {
+
+        const dictType = await this.dictTypeRepository.findById(id)
+        if (!dictType || !dictType.isActive) {
+
+            throw new BusinessLogicException("字典类型不存在或已被禁用")
+
+        }
+        return dictType
+
+    }
+
+    /**
      * 构建查询条件
      *
      * @param {GetListRequestDto} params 查询参数

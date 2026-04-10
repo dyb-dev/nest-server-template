@@ -105,6 +105,25 @@ export class JobService {
     }
 
     /**
+     * 获取可用的调用目标列表
+     *
+     * @returns {Promise<string[]>} 可用的调用目标列表
+     */
+    public async getAvailableInvokeTargetList (): Promise<string[]> {
+
+        this.logger.info("[getAvailableInvokeTargetList] started")
+
+        const allKeys = this.jobScheduler.getHandlerKeys()
+        const jobs = await this.jobRepository.findMany()
+        const usedKeys = jobs.map(job => job.invokeTarget)
+        const data = allKeys.filter(key => !usedKeys.includes(key))
+
+        this.logger.info("[getAvailableInvokeTargetList] completed")
+        return data
+
+    }
+
+    /**
      * 创建定时任务
      *
      * @param {CreateRequestDto} params 创建参数
@@ -145,13 +164,22 @@ export class JobService {
 
         const existingJob = await this.checkJobExists(params.id)
 
-        if (params.name !== existingJob.name) {
+        const isNameChanged = params.name !== existingJob.name
+        const isInvokeTargetChanged = params.invokeTarget !== existingJob.invokeTarget
+
+        if (existingJob.isSystem && (isNameChanged || isInvokeTargetChanged)) {
+
+            throw new BusinessLogicException("系统任务的名称和调用目标不允许修改")
+
+        }
+
+        if (isNameChanged) {
 
             await this.checkNameNotExists(params.name)
 
         }
 
-        if (params.invokeTarget !== existingJob.invokeTarget) {
+        if (isInvokeTargetChanged) {
 
             await this.checkInvokeTargetNotExists(params.invokeTarget)
             this.checkHandlerRegistered(params.invokeTarget)

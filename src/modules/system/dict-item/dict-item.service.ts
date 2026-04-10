@@ -118,7 +118,7 @@ export class DictItemService {
 
         this.logger.info("[create] started")
 
-        await this.dictTypeService.checkDictTypeExists(params.typeId)
+        await this.dictTypeService.checkActiveDictTypeExists(params.typeId)
         await this.checkLabelNotExists(params.typeId, params.label)
         await this.checkValueNotExists(params.typeId, params.value)
 

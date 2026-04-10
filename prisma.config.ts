@@ -7,12 +7,14 @@ import { defineConfig } from "prisma/config"
 import { VITE_ENV } from "./vite.config"
 
 export default defineConfig({
-    // 指定 Prisma Schema 文件路径
+    // Prisma Schema 文件
     schema: "prisma/schema.prisma",
-    // 数据库迁移配置
+    // 迁移配置
     migrations: {
-        // 指定迁移文件的存储目录
-        path: "prisma/migrations"
+        // 迁移文件的存储目录
+        path: "prisma/migrations",
+        // 初始化种子数据脚本
+        seed: "tsx prisma/seed.ts"
     },
     // 数据源配置
     datasource: {

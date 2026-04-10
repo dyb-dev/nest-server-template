@@ -32,7 +32,7 @@ export class JobLogController {
      * @param {GetListRequestDto} query 查询参数
      * @returns {Promise<SysJobLog[]>} 日志列表
      */
-    @Permission("system:jobLog:read")
+    @Permission("system:job:read")
     @Get("getList")
     public async getList (@Query() query: GetListRequestDto): Promise<SysJobLog[]> {
 
@@ -49,7 +49,7 @@ export class JobLogController {
      * @param {GetPageListRequestDto} query 查询参数
      * @returns {Promise<PaginationResponseDto<SysJobLog>>} 日志列表和总数
      */
-    @Permission("system:jobLog:read")
+    @Permission("system:job:read")
     @Get("getPageList")
     public async getPageList (@Query() query: GetPageListRequestDto): Promise<PaginationResponseDto<SysJobLog>> {
 
@@ -66,7 +66,7 @@ export class JobLogController {
      * @param {BatchDeleteRequestDto} body 请求体
      * @returns {Promise<void>}
      */
-    @Permission("system:jobLog:delete")
+    @Permission("system:job:delete")
     @Post("batchDelete")
     public async batchDelete (@Body() body: BatchDeleteRequestDto): Promise<void> {
 
@@ -81,7 +81,7 @@ export class JobLogController {
      *
      * @returns {Promise<void>}
      */
-    @Permission("system:jobLog:delete")
+    @Permission("system:job:delete")
     @Post("deleteAll")
     public async deleteAll (): Promise<void> {
 

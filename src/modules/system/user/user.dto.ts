@@ -134,7 +134,8 @@ export class CreateRequestDto extends UserBaseDto {
 
     /** 密码 */
     @IsPassword()
-    password: string
+    @IsOptional()
+    password?: string
 
 }
 
@@ -152,10 +153,13 @@ export class UpdateRequestDto extends UserBaseDto {
 export class GetDetailRequestDto extends PickType(UpdateRequestDto, ["id"]) {}
 
 /** 重置用户密码 请求 DTO */
-export class ResetPasswordRequestDto extends IntersectionType(
-    PickType(UpdateRequestDto, ["id"]),
-    PickType(CreateRequestDto, ["password"])
-) {}
+export class ResetPasswordRequestDto extends PickType(UpdateRequestDto, ["id"]) {
+
+    /** 密码 */
+    @IsPassword()
+    password: string
+
+}
 
 /** 更新用户状态 请求 DTO */
 export class UpdateStatusRequestDto extends PickType(UpdateRequestDto, ["id"]) {

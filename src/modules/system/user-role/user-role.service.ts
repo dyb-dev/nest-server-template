@@ -28,21 +28,21 @@ export class UserRoleService {
     }
 
     /**
-     * 根据角色ID查询已创建的用户ID数组（可指定范围过滤）
+     * 根据角色ID数组查询已绑定的用户ID数组（可指定范围过滤，已去重）
      *
-     * @param {number} roleId 角色ID
-     * @param {number[]} [userIds] 过滤的用户ID范围
+     * @param {number[]} roleIds 角色ID数组
+     * @param {number[]} userIds 过滤的用户ID范围
      * @returns {Promise<number[]>} 用户ID数组
      */
-    public async findUserIdsByRoleId (roleId: number, userIds?: number[]): Promise<number[]> {
+    public async findUserIdsByRoleIds (roleIds: number[], userIds?: number[]): Promise<number[]> {
 
         const list = await this.userRoleRepository.findMany({
             where: {
-                roleId,
+                roleId: { in: roleIds },
                 ...userIds && { userId: { in: userIds } }
             }
         })
-        return list.map(item => item.userId)
+        return [...new Set(list.map(item => item.userId))]
 
     }
 

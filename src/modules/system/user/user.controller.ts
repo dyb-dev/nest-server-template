@@ -168,14 +168,15 @@ export class UserController {
      * 删除用户
      *
      * @param {DeleteRequestDto} body 请求体
+     * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
     @Permission("system:user:delete")
     @Post("delete")
-    public async delete (@Body() body: DeleteRequestDto): Promise<void> {
+    public async delete (@Body() body: DeleteRequestDto, @User() user: Request["user"]): Promise<void> {
 
         this.logger.info("[delete] started")
-        await this.userService.delete(body)
+        await this.userService.delete(body, user)
         this.logger.info("[delete] completed")
 
     }
@@ -184,15 +185,32 @@ export class UserController {
      * 批量删除用户
      *
      * @param {BatchDeleteRequestDto} body 请求体
+     * @param {Request["user"]} user 当前用户
      * @returns {Promise<void>}
      */
     @Permission("system:user:delete")
     @Post("batchDelete")
-    public async batchDelete (@Body() body: BatchDeleteRequestDto): Promise<void> {
+    public async batchDelete (@Body() body: BatchDeleteRequestDto, @User() user: Request["user"]): Promise<void> {
 
         this.logger.info("[batchDelete] started")
-        await this.userService.batchDelete(body)
+        await this.userService.batchDelete(body, user)
         this.logger.info("[batchDelete] completed")
+
+    }
+
+    /**
+     * 获取激活用户列表
+     *
+     * @returns {Promise<Omit<SysUser, "password" | "deletedAt">[]>} 激活用户列表
+     */
+    @Permission("system:user:read")
+    @Get("getActiveList")
+    public async getActiveList (): Promise<Omit<SysUser, "password" | "deletedAt">[]> {
+
+        this.logger.info("[getActiveList] started")
+        const data = await this.userService.getActiveList()
+        this.logger.info("[getActiveList] completed")
+        return data
 
     }
 

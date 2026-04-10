@@ -2,7 +2,7 @@
  * @FileDesc: 菜单服务
  */
 
-import { Inject, Injectable } from "@nestjs/common"
+import { forwardRef, Inject, Injectable } from "@nestjs/common"
 import { Transactional } from "@nestjs-cls/transactional"
 import { InjectPinoLogger } from "nestjs-pino"
 
@@ -10,6 +10,7 @@ import { BusinessLogicException } from "@/exceptions"
 import { SysMenuType } from "@/prisma/client"
 
 import { DatabaseService } from "../../core"
+import { RoleService } from "../role"
 import { RoleMenuService } from "../role-menu"
 import { UserRoleService } from "../user-role"
 
@@ -39,6 +40,10 @@ export class MenuService {
     /** 菜单仓储 */
     @Inject(MenuRepository)
     private readonly menuRepository: MenuRepository
+
+    /** 角色服务 */
+    @Inject(forwardRef(() => RoleService))
+    private readonly roleService: TWrapper<RoleService>
 
     /** 角色菜单服务 */
     @Inject(RoleMenuService)
@@ -155,7 +160,7 @@ export class MenuService {
 
         if (params.parentId) {
 
-            await this.checkMenuExists(params.parentId)
+            await this.checkActiveMenuExists(params.parentId)
 
         }
 
@@ -168,12 +173,6 @@ export class MenuService {
         if (params.path) {
 
             await this.checkPathNotExists(params.path)
-
-        }
-
-        if (params.perms) {
-
-            await this.checkPermsNotExists(params.perms)
 
         }
 
@@ -219,7 +218,14 @@ export class MenuService {
         const parentIdChanged = parentId !== existingMenu.parentId
         if (parentId && parentIdChanged) {
 
-            await this.checkMenuExists(parentId)
+            if (parentId === params.id) {
+
+                throw new BusinessLogicException("不能将自身设置为父级菜单")
+
+            }
+
+            await this.checkActiveMenuExists(parentId)
+            await this.checkNotDescendant(params.id, parentId)
 
         }
 
@@ -232,12 +238,6 @@ export class MenuService {
         if (params.path && params.path !== existingMenu.path) {
 
             await this.checkPathNotExists(params.path)
-
-        }
-
-        if (params.perms && params.perms !== existingMenu.perms) {
-
-            await this.checkPermsNotExists(params.perms)
 
         }
 
@@ -294,6 +294,26 @@ export class MenuService {
     }
 
     /**
+     * 获取激活菜单树
+     *
+     * @returns {Promise<(SysMenu & { children: SysMenu[] })[]>} 激活菜单树
+     */
+    public async getActiveTree (): Promise<(SysMenu & { children: SysMenu[] })[]> {
+
+        this.logger.info("[getActiveTree] started")
+
+        const data = await this.menuRepository.findMany({
+            where: { isActive: true }
+        })
+
+        const tree = this.buildTree(data)
+
+        this.logger.info("[getActiveTree] completed")
+        return tree
+
+    }
+
+    /**
      * 根据用户ID获取拥有的权限标识集合
      *
      * @param {number} userId 用户ID
@@ -312,23 +332,24 @@ export class MenuService {
         const menus = await this.menuRepository.findMany({
             where: {
                 id: { in: menuIds },
+                isActive: true,
                 perms: { not: null }
             }
         })
 
-        return menus.map(menu => menu.perms as string)
+        return [...new Set(menus.map(menu => menu.perms as string))]
 
     }
 
     /**
-     * 根据ID数组校验菜单是否全部存在
+     * 根据ID数组校验菜单是否全部存在且激活
      *
      * @param {number[]} ids 菜单ID数组
-     * @returns {Promise<boolean>} 是否全部存在
+     * @returns {Promise<boolean>} 是否全部存在且激活
      */
-    public async existsByIds (ids: number[]): Promise<boolean> {
+    public async existsActiveByIds (ids: number[]): Promise<boolean> {
 
-        const count = await this.menuRepository.count({ where: { id: { in: ids } } })
+        const count = await this.menuRepository.count({ where: { id: { in: ids }, isActive: true } })
         return count === ids.length
 
     }
@@ -366,7 +387,16 @@ export class MenuService {
 
         }
 
-        return this.roleMenuService.findMenuIdsByRoleIds(roleIds)
+        const activeRoles = await this.roleService.findActiveByIds(roleIds)
+        const activeRoleIds = activeRoles.map(r => r.id)
+
+        if (activeRoleIds.length === 0) {
+
+            return []
+
+        }
+
+        return this.roleMenuService.findMenuIdsByRoleIds(activeRoleIds)
 
     }
 
@@ -401,6 +431,25 @@ export class MenuService {
         if (!menu) {
 
             throw new BusinessLogicException("菜单不存在")
+
+        }
+        return menu
+
+    }
+
+    /**
+     * 检查菜单是否存在且激活
+     *
+     * @param {number} id 菜单ID
+     * @returns {Promise<SysMenu>} 菜单信息
+     * @throws {BusinessLogicException} 菜单不存在或已被禁用时抛出异常
+     */
+    private async checkActiveMenuExists (id: number): Promise<SysMenu> {
+
+        const menu = await this.menuRepository.findById(id)
+        if (!menu || !menu.isActive) {
+
+            throw new BusinessLogicException("菜单不存在或已被禁用")
 
         }
         return menu
@@ -444,18 +493,33 @@ export class MenuService {
     }
 
     /**
-     * 检查权限标识是否不存在
+     * 检查父级菜单不是当前菜单的子孙节点
      *
-     * @param {string} perms 权限标识
+     * @param {number} id 当前菜单ID
+     * @param {number} parentId 父级菜单ID
      * @returns {Promise<void>}
-     * @throws {BusinessLogicException} 权限标识已存在时抛出异常
+     * @throws {BusinessLogicException} 父级菜单是子孙节点时抛出异常
      */
-    private async checkPermsNotExists (perms: string): Promise<void> {
+    private async checkNotDescendant (id: number, parentId: number): Promise<void> {
 
-        const exists = await this.menuRepository.exists({ perms })
-        if (exists) {
+        let currentId: number | null = parentId
 
-            throw new BusinessLogicException("权限标识已存在")
+        while (currentId !== null) {
+
+            if (currentId === id) {
+
+                throw new BusinessLogicException("不能将子孙菜单设置为父级菜单")
+
+            }
+
+            const menu = await this.menuRepository.findById(currentId)
+            if (!menu) {
+
+                break
+
+            }
+
+            currentId = menu.parentId
 
         }
 

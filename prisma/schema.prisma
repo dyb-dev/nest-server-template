@@ -1,646 +1,646 @@
 /**
- * @FileDesc: Prisma 配置 (文档: https://pris.ly/d/prisma-schema)
+ * @FileDesc: prisma 模式 (文档: https://pris.ly/d/prisma-schema)
  */
 
 /// 生成客户端 选项
 generator client {
-    /// 生成器
-    provider = "prisma-client"
-    /// 输出路径
-    output   = "../src/prisma"
+  /// 生成器
+  provider = "prisma-client"
+  /// 输出路径
+  output   = "../src/prisma"
 }
 
 /// 数据源 选项
 datasource db {
-    /// 数据库
-    provider = "postgresql"
+  /// 数据库
+  provider = "postgresql"
 }
 
 /// 参数配置表
 model SysConfig {
-    /// 配置ID
-    id        Int      @id @default(autoincrement())
-    /// 名称
-    name      String   @db.VarChar(100)
-    /// 键
-    key       String   @unique @db.VarChar(100)
-    /// 值
-    value     String   @db.Text
-    /// 是否系统配置
-    isSystem  Boolean  @default(false) @map("is_system")
-    /// 创建人
-    createdBy String?  @map("created_by") @db.VarChar(64)
-    /// 创建时间
-    createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
-    /// 更新人
-    updatedBy String?  @map("updated_by") @db.VarChar(64)
-    /// 更新时间
-    updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
-    /// 备注
-    remark    String?  @db.VarChar(500)
+  /// 配置ID
+  id        Int      @id @default(autoincrement())
+  /// 名称
+  name      String   @db.VarChar(100)
+  /// 键
+  key       String   @unique @db.VarChar(100)
+  /// 值
+  value     String   @db.Text
+  /// 是否系统配置
+  isSystem  Boolean  @default(false) @map("is_system")
+  /// 创建人
+  createdBy String?  @map("created_by") @db.VarChar(64)
+  /// 创建时间
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  /// 更新人
+  updatedBy String?  @map("updated_by") @db.VarChar(64)
+  /// 更新时间
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
+  /// 备注
+  remark    String?  @db.VarChar(500)
 
-    @@index([name])
-    @@index([isSystem])
-    @@index([createdAt])
-    @@map("sys_config")
+  @@index([name])
+  @@index([isSystem])
+  @@index([createdAt])
+  @@map("sys_config")
 }
 
 /// 字典类型表
 model SysDictType {
-    /// 类型ID
-    id        Int      @id @default(autoincrement())
-    /// 名称
-    name      String   @unique @db.VarChar(100)
-    /// 代码
-    code      String   @unique @db.VarChar(100)
-    /// 是否激活
-    isActive  Boolean  @default(true) @map("is_active")
-    /// 创建人
-    createdBy String?  @map("created_by") @db.VarChar(64)
-    /// 创建时间
-    createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
-    /// 更新人
-    updatedBy String?  @map("updated_by") @db.VarChar(64)
-    /// 更新时间
-    updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
-    /// 备注
-    remark    String?  @db.VarChar(500)
+  /// 类型ID
+  id        Int      @id @default(autoincrement())
+  /// 名称
+  name      String   @unique @db.VarChar(100)
+  /// 代码
+  code      String   @unique @db.VarChar(100)
+  /// 是否激活
+  isActive  Boolean  @default(true) @map("is_active")
+  /// 创建人
+  createdBy String?  @map("created_by") @db.VarChar(64)
+  /// 创建时间
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  /// 更新人
+  updatedBy String?  @map("updated_by") @db.VarChar(64)
+  /// 更新时间
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
+  /// 备注
+  remark    String?  @db.VarChar(500)
 
-    dictItems SysDictItem[]
+  dictItems SysDictItem[]
 
-    @@index([isActive])
-    @@index([createdAt])
-    @@map("sys_dict_type")
+  @@index([isActive])
+  @@index([createdAt])
+  @@map("sys_dict_type")
 }
 
 /// 字典项表
 model SysDictItem {
-    /// 字典项ID
-    id        Int      @id @default(autoincrement())
-    /// 字典类型ID
-    typeId    Int      @map("type_id")
-    /// 标签
-    label     String   @db.VarChar(100)
-    /// 值
-    value     String   @db.VarChar(100)
-    /// CSS类名
-    cssClass  String?  @map("css_class") @db.VarChar(100)
-    /// 列表CSS类名
-    listClass String?  @map("list_class") @db.VarChar(100)
-    /// 是否默认
-    isDefault Boolean  @default(false) @map("is_default")
-    /// 排序
-    sort      Int      @default(0)
-    /// 是否激活
-    isActive  Boolean  @default(true) @map("is_active")
-    /// 创建人
-    createdBy String?  @map("created_by") @db.VarChar(64)
-    /// 创建时间
-    createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
-    /// 更新人
-    updatedBy String?  @map("updated_by") @db.VarChar(64)
-    /// 更新时间
-    updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
-    /// 备注
-    remark    String?  @db.VarChar(500)
+  /// 字典项ID
+  id        Int      @id @default(autoincrement())
+  /// 字典类型ID
+  typeId    Int      @map("type_id")
+  /// 标签
+  label     String   @db.VarChar(100)
+  /// 值
+  value     String   @db.VarChar(100)
+  /// CSS类名
+  cssClass  String?  @map("css_class") @db.VarChar(100)
+  /// 列表CSS类名
+  listClass String?  @map("list_class") @db.VarChar(100)
+  /// 是否默认
+  isDefault Boolean  @default(false) @map("is_default")
+  /// 排序
+  sort      Int      @default(0)
+  /// 是否激活
+  isActive  Boolean  @default(true) @map("is_active")
+  /// 创建人
+  createdBy String?  @map("created_by") @db.VarChar(64)
+  /// 创建时间
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  /// 更新人
+  updatedBy String?  @map("updated_by") @db.VarChar(64)
+  /// 更新时间
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
+  /// 备注
+  remark    String?  @db.VarChar(500)
 
-    dictType SysDictType @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  dictType SysDictType @relation(fields: [typeId], references: [id], onDelete: Restrict)
 
-    @@unique([typeId, label])
-    @@unique([typeId, value])
-    @@index([typeId, isActive])
-    @@index([typeId, sort])
-    @@map("sys_dict_item")
+  @@unique([typeId, label])
+  @@unique([typeId, value])
+  @@index([typeId, isActive])
+  @@index([typeId, sort])
+  @@map("sys_dict_item")
 }
 
 /// 定时任务调度表
 model SysJob {
-    /// 任务ID
-    id             Int      @id @default(autoincrement())
-    /// 名称
-    name           String   @unique @db.VarChar(100)
-    /// 调用目标字符串
-    invokeTarget   String   @unique @db.VarChar(100)
-    /// Cron表达式
-    cronExpression String   @map("cron_expression") @db.VarChar(100)
-    /// 是否系统任务
-    isSystem       Boolean  @default(false) @map("is_system")
-    /// 是否激活
-    isActive       Boolean  @default(true) @map("is_active")
-    /// 创建人
-    createdBy      String?  @map("created_by") @db.VarChar(64)
-    /// 创建时间
-    createdAt      DateTime @default(now()) @map("created_at") @db.Timestamp(3)
-    /// 更新人
-    updatedBy      String?  @map("updated_by") @db.VarChar(64)
-    /// 更新时间
-    updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
-    /// 备注
-    remark         String?  @db.VarChar(500)
+  /// 任务ID
+  id             Int      @id @default(autoincrement())
+  /// 名称
+  name           String   @unique @db.VarChar(100)
+  /// 调用目标字符串
+  invokeTarget   String   @unique @db.VarChar(100)
+  /// Cron表达式
+  cronExpression String   @map("cron_expression") @db.VarChar(100)
+  /// 是否系统任务
+  isSystem       Boolean  @default(false) @map("is_system")
+  /// 是否激活
+  isActive       Boolean  @default(true) @map("is_active")
+  /// 创建人
+  createdBy      String?  @map("created_by") @db.VarChar(64)
+  /// 创建时间
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  /// 更新人
+  updatedBy      String?  @map("updated_by") @db.VarChar(64)
+  /// 更新时间
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
+  /// 备注
+  remark         String?  @db.VarChar(500)
 
-    jobLogs SysJobLog[]
+  jobLogs SysJobLog[]
 
-    @@index([isSystem])
-    @@index([isActive])
-    @@map("sys_job")
+  @@index([isSystem])
+  @@index([isActive])
+  @@map("sys_job")
 }
 
 /// 定时任务调度日志表
 model SysJobLog {
-    /// 日志ID
-    id            Int      @id @default(autoincrement())
-    /// 任务ID
-    jobId         Int      @map("job_id")
-    /// 任务名称
-    name          String   @db.VarChar(100)
-    /// 调用目标字符串
-    invokeTarget  String   @db.VarChar(100)
-    /// 是否系统任务
-    isSystem      Boolean  @default(false) @map("is_system")
-    /// 是否执行成功
-    isSuccess     Boolean  @map("is_success")
-    /// 消息
-    message       String?  @db.VarChar(255)
-    /// 错误异常信息
-    exceptionInfo String?  @map("exception_info") @db.Text
-    /// 执行时间
-    executedAt    DateTime @default(now()) @map("executed_at") @db.Timestamp(3)
+  /// 日志ID
+  id            Int      @id @default(autoincrement())
+  /// 任务ID
+  jobId         Int      @map("job_id")
+  /// 任务名称
+  name          String   @db.VarChar(100)
+  /// 调用目标字符串
+  invokeTarget  String   @db.VarChar(100)
+  /// 是否系统任务
+  isSystem      Boolean  @default(false) @map("is_system")
+  /// 是否执行成功
+  isSuccess     Boolean  @map("is_success")
+  /// 消息
+  message       String?  @db.VarChar(255)
+  /// 错误异常信息
+  exceptionInfo String?  @map("exception_info") @db.Text
+  /// 执行时间
+  executedAt    DateTime @default(now()) @map("executed_at") @db.Timestamp(3)
 
-    job SysJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  job SysJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
-    @@index([name])
-    @@index([isSystem])
-    @@index([isSuccess])
-    @@index([executedAt])
-    @@map("sys_job_log")
+  @@index([name])
+  @@index([isSystem])
+  @@index([isSuccess])
+  @@index([executedAt])
+  @@map("sys_job_log")
 }
 
 /// 用户表
 model SysUser {
-    /// 用户ID
-    id                Int        @id @default(autoincrement())
-    /// 用户名
-    username          String     @db.VarChar(30)
-    /// 昵称
-    nickname          String?    @db.VarChar(30)
-    /// 密码（hash）
-    password          String     @db.VarChar(100)
-    /// 密码更新时间
-    passwordUpdatedAt DateTime   @default(now()) @map("password_updated_at") @db.Timestamp(3)
-    /// 邮箱
-    email             String?    @db.VarChar(50)
-    /// 手机号
-    phone             String?    @db.VarChar(20)
-    /// 头像
-    avatar            String?    @db.VarChar(100)
-    /// 性别
-    gender            UserGender @default(Unknown)
-    /// 部门ID
-    deptId            Int?       @map("dept_id")
-    /// 是否系统用户
-    isSystem          Boolean    @default(false) @map("is_system")
-    /// 是否激活
-    isActive          Boolean    @default(true) @map("is_active")
-    /// 创建人
-    createdBy         String?    @map("created_by") @db.VarChar(64)
-    /// 创建时间
-    createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamp(3)
-    /// 更新人
-    updatedBy         String?    @map("updated_by") @db.VarChar(64)
-    /// 更新时间
-    updatedAt         DateTime   @updatedAt @map("updated_at") @db.Timestamp(3)
-    /// 软删除时间戳（0表示未删除）
-    deletedAt         BigInt     @default(0) @map("deleted_at")
-    /// 备注
-    remark            String?    @db.VarChar(500)
+  /// 用户ID
+  id                Int        @id @default(autoincrement())
+  /// 用户名
+  username          String     @db.VarChar(30)
+  /// 昵称
+  nickname          String?    @db.VarChar(30)
+  /// 密码（hash）
+  password          String     @db.VarChar(100)
+  /// 密码更新时间
+  passwordUpdatedAt DateTime   @default(now()) @map("password_updated_at") @db.Timestamp(3)
+  /// 邮箱
+  email             String?    @db.VarChar(50)
+  /// 手机号
+  phone             String?    @db.VarChar(20)
+  /// 头像
+  avatar            String?    @db.VarChar(100)
+  /// 性别
+  gender            UserGender @default(Unknown)
+  /// 部门ID
+  deptId            Int?       @map("dept_id")
+  /// 是否系统用户
+  isSystem          Boolean    @default(false) @map("is_system")
+  /// 是否激活
+  isActive          Boolean    @default(true) @map("is_active")
+  /// 创建人
+  createdBy         String?    @map("created_by") @db.VarChar(64)
+  /// 创建时间
+  createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamp(3)
+  /// 更新人
+  updatedBy         String?    @map("updated_by") @db.VarChar(64)
+  /// 更新时间
+  updatedAt         DateTime   @updatedAt @map("updated_at") @db.Timestamp(3)
+  /// 软删除时间戳（0表示未删除）
+  deletedAt         BigInt     @default(0) @map("deleted_at")
+  /// 备注
+  remark            String?    @db.VarChar(500)
 
-    dept SysDept? @relation(fields: [deptId], references: [id], onDelete: SetNull)
+  dept SysDept? @relation(fields: [deptId], references: [id], onDelete: SetNull)
 
-    userRoles     SysUserRole[]
-    userPosts     SysUserPost[]
-    leadingDepts  SysDept[]         @relation("DeptLeader")
-    loginSessions SysLoginSession[]
-    loginLogs     SysLoginLog[]
-    operationLogs SysOperationLog[]
+  userRoles     SysUserRole[]
+  userPosts     SysUserPost[]
+  leadingDepts  SysDept[]         @relation("DeptLeader")
+  loginSessions SysLoginSession[]
+  loginLogs     SysLoginLog[]
+  operationLogs SysOperationLog[]
 
-    @@unique([username, deletedAt])
-    @@unique([email, deletedAt])
-    @@unique([phone, deletedAt])
-    @@index([isActive, deletedAt])
-    @@index([createdAt, deletedAt])
-    @@index([deptId])
-    @@index([deletedAt])
-    @@map("sys_user")
+  @@unique([username, deletedAt])
+  @@unique([email, deletedAt])
+  @@unique([phone, deletedAt])
+  @@index([isActive, deletedAt])
+  @@index([createdAt, deletedAt])
+  @@index([deptId])
+  @@index([deletedAt])
+  @@map("sys_user")
 }
 
 /// 用户性别
 enum UserGender {
-    /// 男
-    Male
-    /// 女
-    Female
-    /// 未知
-    Unknown
+  /// 男
+  Male
+  /// 女
+  Female
+  /// 未知
+  Unknown
 }
 
 /// 部门表
 model SysDept {
-    /// 部门ID
-    id        Int      @id @default(autoincrement())
-    /// 父级部门ID
-    parentId  Int?     @map("parent_id")
-    /// 祖级列表（逗号分隔）格式: 1,2,3
-    ancestors String   @default("") @db.VarChar(50)
-    /// 名称
-    name      String   @db.VarChar(30)
-    /// 负责人ID
-    leaderId  Int?     @map("leader_id")
-    /// 部门邮箱
-    email     String?  @db.VarChar(50)
-    /// 部门电话
-    phone     String?  @db.VarChar(20)
-    /// 排序
-    sort      Int      @default(0)
-    /// 是否激活
-    isActive  Boolean  @default(true) @map("is_active")
-    /// 创建人
-    createdBy String?  @map("created_by") @db.VarChar(64)
-    /// 创建时间
-    createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
-    /// 更新人
-    updatedBy String?  @map("updated_by") @db.VarChar(64)
-    /// 更新时间
-    updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
-    /// 软删除时间戳（0表示未删除）
-    deletedAt BigInt   @default(0) @map("deleted_at")
-    /// 备注
-    remark    String?  @db.VarChar(500)
+  /// 部门ID
+  id        Int      @id @default(autoincrement())
+  /// 父级部门ID
+  parentId  Int?     @map("parent_id")
+  /// 祖级列表（逗号分隔）格式: 1,2,3
+  ancestors String   @default("") @db.VarChar(50)
+  /// 名称
+  name      String   @db.VarChar(30)
+  /// 负责人ID
+  leaderId  Int?     @map("leader_id")
+  /// 部门邮箱
+  email     String?  @db.VarChar(50)
+  /// 部门电话
+  phone     String?  @db.VarChar(20)
+  /// 排序
+  sort      Int      @default(0)
+  /// 是否激活
+  isActive  Boolean  @default(true) @map("is_active")
+  /// 创建人
+  createdBy String?  @map("created_by") @db.VarChar(64)
+  /// 创建时间
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  /// 更新人
+  updatedBy String?  @map("updated_by") @db.VarChar(64)
+  /// 更新时间
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
+  /// 软删除时间戳（0表示未删除）
+  deletedAt BigInt   @default(0) @map("deleted_at")
+  /// 备注
+  remark    String?  @db.VarChar(500)
 
-    parent   SysDept?  @relation("DeptTree", fields: [parentId], references: [id], onDelete: Restrict)
-    children SysDept[] @relation("DeptTree")
+  parent   SysDept?  @relation("DeptTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children SysDept[] @relation("DeptTree")
 
-    leader SysUser? @relation("DeptLeader", fields: [leaderId], references: [id], onDelete: SetNull)
+  leader SysUser? @relation("DeptLeader", fields: [leaderId], references: [id], onDelete: SetNull)
 
-    users     SysUser[]
-    roleDepts SysRoleDept[]
+  users     SysUser[]
+  roleDepts SysRoleDept[]
 
-    @@unique([parentId, name, deletedAt])
-    @@index([name, deletedAt])
-    @@index([isActive, deletedAt])
-    @@index([deletedAt])
-    @@map("sys_dept")
+  @@unique([parentId, name, deletedAt])
+  @@index([name, deletedAt])
+  @@index([isActive, deletedAt])
+  @@index([deletedAt])
+  @@map("sys_dept")
 }
 
 /// 岗位表
 model SysPost {
-    /// 岗位ID
-    id        Int      @id @default(autoincrement())
-    /// 名称
-    name      String   @unique @db.VarChar(50)
-    /// 代码
-    code      String   @unique @db.VarChar(64)
-    /// 排序
-    sort      Int      @default(0)
-    /// 是否激活
-    isActive  Boolean  @default(true) @map("is_active")
-    /// 创建人
-    createdBy String?  @map("created_by") @db.VarChar(64)
-    /// 创建时间
-    createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
-    /// 更新人
-    updatedBy String?  @map("updated_by") @db.VarChar(64)
-    /// 更新时间
-    updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
-    /// 备注
-    remark    String?  @db.VarChar(500)
+  /// 岗位ID
+  id        Int      @id @default(autoincrement())
+  /// 名称
+  name      String   @unique @db.VarChar(50)
+  /// 代码
+  code      String   @unique @db.VarChar(64)
+  /// 排序
+  sort      Int      @default(0)
+  /// 是否激活
+  isActive  Boolean  @default(true) @map("is_active")
+  /// 创建人
+  createdBy String?  @map("created_by") @db.VarChar(64)
+  /// 创建时间
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  /// 更新人
+  updatedBy String?  @map("updated_by") @db.VarChar(64)
+  /// 更新时间
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(3)
+  /// 备注
+  remark    String?  @db.VarChar(500)
 
-    userPosts SysUserPost[]
+  userPosts SysUserPost[]
 
-    @@index([isActive])
-    @@map("sys_post")
+  @@index([isActive])
+  @@map("sys_post")
 }
 
 /// 用户岗位关系表
 model SysUserPost {
-    /// 用户ID
-    userId Int @map("user_id")
-    /// 岗位ID
-    postId Int @map("post_id")
+  /// 用户ID
+  userId Int @map("user_id")
+  /// 岗位ID
+  postId Int @map("post_id")
 
-    user SysUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-    post SysPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user SysUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post SysPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-    @@id([userId, postId])
-    @@index([postId])
-    @@map("sys_user_post")
+  @@id([userId, postId])
+  @@index([postId])
+  @@map("sys_user_post")
 }
 
 /// 角色表
 model SysRole {
-    /// 角色ID
-    id                Int              @id @default(autoincrement())
-    /// 名称
-    name              String           @db.VarChar(30)
-    /// 代码
-    code              String           @db.VarChar(100)
-    /// 数据范围
-    dataScope         SysRoleDataScope @default(All) @map("data_scope")
-    /// 是否菜单树严格勾选（父子节点互不影响）
-    isMenuCheckStrict Boolean          @default(false) @map("is_menu_check_strict")
-    /// 是否部门树严格勾选（父子节点互不影响）
-    isDeptCheckStrict Boolean          @default(false) @map("is_dept_check_strict")
-    /// 排序
-    sort              Int              @default(0)
-    /// 是否激活
-    isActive          Boolean          @default(true) @map("is_active")
-    /// 创建人
-    createdBy         String?          @map("created_by") @db.VarChar(64)
-    /// 创建时间
-    createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamp(3)
-    /// 更新人
-    updatedBy         String?          @map("updated_by") @db.VarChar(64)
-    /// 更新时间
-    updatedAt         DateTime         @updatedAt @map("updated_at") @db.Timestamp(3)
-    /// 软删除时间戳（0表示未删除）
-    deletedAt         BigInt           @default(0) @map("deleted_at")
-    /// 备注
-    remark            String?          @db.VarChar(500)
+  /// 角色ID
+  id                Int              @id @default(autoincrement())
+  /// 名称
+  name              String           @db.VarChar(30)
+  /// 代码
+  code              String           @db.VarChar(100)
+  /// 数据范围
+  dataScope         SysRoleDataScope @default(All) @map("data_scope")
+  /// 是否菜单树严格勾选（父子节点互不影响）
+  isMenuCheckStrict Boolean          @default(false) @map("is_menu_check_strict")
+  /// 是否部门树严格勾选（父子节点互不影响）
+  isDeptCheckStrict Boolean          @default(false) @map("is_dept_check_strict")
+  /// 排序
+  sort              Int              @default(0)
+  /// 是否激活
+  isActive          Boolean          @default(true) @map("is_active")
+  /// 创建人
+  createdBy         String?          @map("created_by") @db.VarChar(64)
+  /// 创建时间
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamp(3)
+  /// 更新人
+  updatedBy         String?          @map("updated_by") @db.VarChar(64)
+  /// 更新时间
+  updatedAt         DateTime         @updatedAt @map("updated_at") @db.Timestamp(3)
+  /// 软删除时间戳（0表示未删除）
+  deletedAt         BigInt           @default(0) @map("deleted_at")
+  /// 备注
+  remark            String?          @db.VarChar(500)
 
-    userRoles SysUserRole[]
-    roleDepts SysRoleDept[]
-    roleMenus SysRoleMenu[]
+  userRoles SysUserRole[]
+  roleDepts SysRoleDept[]
+  roleMenus SysRoleMenu[]
 
-    @@unique([name, deletedAt])
-    @@unique([code, deletedAt])
-    @@index([isActive, deletedAt])
-    @@index([createdAt, deletedAt])
-    @@index([deletedAt])
-    @@map("sys_role")
+  @@unique([name, deletedAt])
+  @@unique([code, deletedAt])
+  @@index([isActive, deletedAt])
+  @@index([createdAt, deletedAt])
+  @@index([deletedAt])
+  @@map("sys_role")
 }
 
 /// 角色数据范围
 enum SysRoleDataScope {
-    /// 全部
-    All
-    /// 自定义（通过 SysRoleDept 指定）
-    Custom
-    /// 本部门
-    Dept
-    /// 本部门及所有子孙部门
-    DeptAndBelow
+  /// 全部
+  All
+  /// 自定义（通过 SysRoleDept 指定）
+  Custom
+  /// 本部门
+  Dept
+  /// 本部门及所有子孙部门
+  DeptAndBelow
 }
 
 /// 用户角色关系表
 model SysUserRole {
-    /// 用户ID
-    userId Int @map("user_id")
-    /// 角色ID
-    roleId Int @map("role_id")
+  /// 用户ID
+  userId Int @map("user_id")
+  /// 角色ID
+  roleId Int @map("role_id")
 
-    user SysUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-    role SysRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user SysUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role SysRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
-    @@id([userId, roleId])
-    @@index([roleId])
-    @@map("sys_user_role")
+  @@id([userId, roleId])
+  @@index([roleId])
+  @@map("sys_user_role")
 }
 
 /// 角色部门关系表
 model SysRoleDept {
-    /// 角色ID
-    roleId Int @map("role_id")
-    /// 部门ID
-    deptId Int @map("dept_id")
+  /// 角色ID
+  roleId Int @map("role_id")
+  /// 部门ID
+  deptId Int @map("dept_id")
 
-    role SysRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
-    dept SysDept @relation(fields: [deptId], references: [id], onDelete: Cascade)
+  role SysRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  dept SysDept @relation(fields: [deptId], references: [id], onDelete: Cascade)
 
-    @@id([roleId, deptId])
-    @@index([deptId])
-    @@map("sys_role_dept")
+  @@id([roleId, deptId])
+  @@index([deptId])
+  @@map("sys_role_dept")
 }
 
 /// 菜单表
 model SysMenu {
-    /// 菜单ID
-    id         Int         @id @default(autoincrement())
-    /// 父级菜单ID
-    parentId   Int?        @map("parent_id")
-    /// 名称
-    name       String      @db.VarChar(50)
-    /// 路由名称
-    routeName  String?     @unique @map("route_name") @db.VarChar(50)
-    /// 路径
-    path       String?     @unique @db.VarChar(200)
-    /// 组件路径
-    component  String?     @db.VarChar(255)
-    /// 权限标识
-    perms      String?     @unique @db.VarChar(100)
-    /// 图标
-    icon       String?     @db.VarChar(100)
-    /// 类型
-    type       SysMenuType
-    /// 是否外链
-    isExternal Boolean     @default(false) @map("is_external")
-    /// 是否显示
-    isVisible  Boolean     @default(true) @map("is_visible")
-    /// 是否缓存
-    isCache    Boolean     @default(true) @map("is_cache")
-    /// 排序
-    sort       Int         @default(0)
-    /// 是否激活
-    isActive   Boolean     @default(true) @map("is_active")
-    /// 创建人
-    createdBy  String?     @map("created_by") @db.VarChar(64)
-    /// 创建时间
-    createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamp(3)
-    /// 更新人
-    updatedBy  String?     @map("updated_by") @db.VarChar(64)
-    /// 更新时间
-    updatedAt  DateTime    @updatedAt @map("updated_at") @db.Timestamp(3)
-    /// 备注
-    remark     String?     @db.VarChar(500)
+  /// 菜单ID
+  id         Int         @id @default(autoincrement())
+  /// 父级菜单ID
+  parentId   Int?        @map("parent_id")
+  /// 名称
+  name       String      @db.VarChar(50)
+  /// 路由名称
+  routeName  String?     @unique @map("route_name") @db.VarChar(50)
+  /// 路径
+  path       String?     @unique @db.VarChar(200)
+  /// 组件路径
+  component  String?     @db.VarChar(255)
+  /// 权限标识
+  perms      String?     @db.VarChar(100)
+  /// 图标
+  icon       String?     @db.VarChar(100)
+  /// 类型
+  type       SysMenuType
+  /// 是否外链
+  isExternal Boolean     @default(false) @map("is_external")
+  /// 是否显示
+  isVisible  Boolean     @default(true) @map("is_visible")
+  /// 是否缓存
+  isCache    Boolean     @default(true) @map("is_cache")
+  /// 排序
+  sort       Int         @default(0)
+  /// 是否激活
+  isActive   Boolean     @default(true) @map("is_active")
+  /// 创建人
+  createdBy  String?     @map("created_by") @db.VarChar(64)
+  /// 创建时间
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamp(3)
+  /// 更新人
+  updatedBy  String?     @map("updated_by") @db.VarChar(64)
+  /// 更新时间
+  updatedAt  DateTime    @updatedAt @map("updated_at") @db.Timestamp(3)
+  /// 备注
+  remark     String?     @db.VarChar(500)
 
-    parent   SysMenu?  @relation("MenuTree", fields: [parentId], references: [id], onDelete: Restrict)
-    children SysMenu[] @relation("MenuTree")
+  parent   SysMenu?  @relation("MenuTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children SysMenu[] @relation("MenuTree")
 
-    roleMenus SysRoleMenu[]
+  roleMenus SysRoleMenu[]
 
-    @@index([name])
-    @@index([isActive])
-    @@index([parentId, sort])
-    @@map("sys_menu")
+  @@index([name])
+  @@index([isActive])
+  @@index([parentId, sort])
+  @@map("sys_menu")
 }
 
 /// 菜单类型
 enum SysMenuType {
-    /// 目录
-    Catalog
-    /// 菜单
-    Menu
-    /// 按钮
-    Button
+  /// 目录
+  Catalog
+  /// 菜单
+  Menu
+  /// 按钮
+  Button
 }
 
 /// 角色菜单关系表
 model SysRoleMenu {
-    /// 角色ID
-    roleId Int @map("role_id")
-    /// 菜单ID
-    menuId Int @map("menu_id")
+  /// 角色ID
+  roleId Int @map("role_id")
+  /// 菜单ID
+  menuId Int @map("menu_id")
 
-    role SysRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
-    menu SysMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  role SysRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  menu SysMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
 
-    @@id([roleId, menuId])
-    @@index([menuId])
-    @@map("sys_role_menu")
+  @@id([roleId, menuId])
+  @@index([menuId])
+  @@map("sys_role_menu")
 }
 
 /// 登录会话表
 model SysLoginSession {
-    /// 会话ID
-    id           Int      @id @default(autoincrement())
-    /// 用户ID
-    userId       Int      @map("user_id")
-    /// 用户名
-    username     String   @db.VarChar(30)
-    /// 部门名称
-    deptName     String?  @map("dept_name") @db.VarChar(30)
-    /// 刷新令牌（hmac）
-    refreshToken String   @unique @map("refresh_token") @db.Text
-    /// IP
-    ip           String?  @db.VarChar(45)
-    /// 地理位置
-    location     String?  @db.VarChar(255)
-    /// 浏览器
-    browser      String?  @db.VarChar(100)
-    /// 操作系统
-    os           String?  @db.VarChar(100)
-    /// 过期时间
-    expiresAt    DateTime @map("expires_at") @db.Timestamp(3)
-    /// 登录时间
-    loginAt      DateTime @default(now()) @map("login_at") @db.Timestamp(3)
+  /// 会话ID
+  id           Int      @id @default(autoincrement())
+  /// 用户ID
+  userId       Int      @map("user_id")
+  /// 用户名
+  username     String   @db.VarChar(30)
+  /// 部门名称
+  deptName     String?  @map("dept_name") @db.VarChar(30)
+  /// 刷新令牌（hmac）
+  refreshToken String   @unique @map("refresh_token") @db.Text
+  /// IP
+  ip           String?  @db.VarChar(45)
+  /// 地理位置
+  location     String?  @db.VarChar(255)
+  /// 浏览器
+  browser      String?  @db.VarChar(100)
+  /// 操作系统
+  os           String?  @db.VarChar(100)
+  /// 过期时间
+  expiresAt    DateTime @map("expires_at") @db.Timestamp(3)
+  /// 登录时间
+  loginAt      DateTime @default(now()) @map("login_at") @db.Timestamp(3)
 
-    user SysUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user SysUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@index([userId])
-    @@index([username])
-    @@index([ip])
-    @@index([expiresAt])
-    @@map("sys_login_session")
+  @@index([userId])
+  @@index([username])
+  @@index([ip])
+  @@index([expiresAt])
+  @@map("sys_login_session")
 }
 
 /// 登录日志表
 model SysLoginLog {
-    /// 日志ID
-    id        Int      @id @default(autoincrement())
-    /// 用户ID
-    userId    Int?     @map("user_id")
-    /// 用户名
-    username  String?  @db.VarChar(30)
-    /// IP
-    ip        String?  @db.VarChar(45)
-    /// 地理位置
-    location  String?  @db.VarChar(255)
-    /// 浏览器
-    browser   String?  @db.VarChar(100)
-    /// 操作系统
-    os        String?  @db.VarChar(100)
-    /// 是否成功
-    isSuccess Boolean  @map("is_success")
-    /// 消息
-    message   String?  @db.VarChar(255)
-    /// 登录时间
-    loginAt   DateTime @default(now()) @map("login_at") @db.Timestamp(3)
+  /// 日志ID
+  id        Int      @id @default(autoincrement())
+  /// 用户ID
+  userId    Int?     @map("user_id")
+  /// 用户名
+  username  String?  @db.VarChar(30)
+  /// IP
+  ip        String?  @db.VarChar(45)
+  /// 地理位置
+  location  String?  @db.VarChar(255)
+  /// 浏览器
+  browser   String?  @db.VarChar(100)
+  /// 操作系统
+  os        String?  @db.VarChar(100)
+  /// 是否成功
+  isSuccess Boolean  @map("is_success")
+  /// 消息
+  message   String?  @db.VarChar(255)
+  /// 登录时间
+  loginAt   DateTime @default(now()) @map("login_at") @db.Timestamp(3)
 
-    user SysUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user SysUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-    @@index([username])
-    @@index([ip])
-    @@index([isSuccess])
-    @@index([loginAt])
-    @@map("sys_login_log")
+  @@index([username])
+  @@index([ip])
+  @@index([isSuccess])
+  @@index([loginAt])
+  @@map("sys_login_log")
 }
 
 /// 操作日志表
 model SysOperationLog {
-    /// 日志ID
-    id         Int      @id @default(autoincrement())
-    /// 请求ID
-    requestId  String   @map("request_id") @db.VarChar(64)
-    /// 用户ID
-    userId     Int?     @map("user_id")
-    /// 用户名
-    username   String?  @db.VarChar(30)
-    /// 请求方法
-    method     String   @db.VarChar(10)
-    /// 请求路径
-    path       String   @db.VarChar(255)
-    /// 请求参数
-    params     Json
-    /// 返回结果
-    result     Json
-    /// IP
-    ip         String?  @db.VarChar(45)
-    /// 地理位置
-    location   String?  @db.VarChar(255)
-    /// 浏览器
-    browser    String?  @db.VarChar(100)
-    /// 操作系统
-    os         String?  @db.VarChar(100)
-    /// 是否成功
-    isSuccess  Boolean  @map("is_success")
-    /// 消息
-    message    String?  @db.VarChar(255)
-    /// 操作时间
-    operatedAt DateTime @default(now()) @map("operated_at") @db.Timestamp(3)
-    /// 执行时长(ms)
-    duration   Int
+  /// 日志ID
+  id         Int      @id @default(autoincrement())
+  /// 请求ID
+  requestId  String   @map("request_id") @db.VarChar(64)
+  /// 用户ID
+  userId     Int?     @map("user_id")
+  /// 用户名
+  username   String?  @db.VarChar(30)
+  /// 请求方法
+  method     String   @db.VarChar(10)
+  /// 请求路径
+  path       String   @db.VarChar(255)
+  /// 请求参数
+  params     Json
+  /// 返回结果
+  result     Json
+  /// IP
+  ip         String?  @db.VarChar(45)
+  /// 地理位置
+  location   String?  @db.VarChar(255)
+  /// 浏览器
+  browser    String?  @db.VarChar(100)
+  /// 操作系统
+  os         String?  @db.VarChar(100)
+  /// 是否成功
+  isSuccess  Boolean  @map("is_success")
+  /// 消息
+  message    String?  @db.VarChar(255)
+  /// 操作时间
+  operatedAt DateTime @default(now()) @map("operated_at") @db.Timestamp(3)
+  /// 执行时长(ms)
+  duration   Int
 
-    user SysUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user SysUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-    @@index([requestId])
-    @@index([username])
-    @@index([ip])
-    @@index([isSuccess])
-    @@index([operatedAt])
-    @@map("sys_operation_log")
+  @@index([requestId])
+  @@index([username])
+  @@index([ip])
+  @@index([isSuccess])
+  @@index([operatedAt])
+  @@map("sys_operation_log")
 }
 
 /// 通知公告表
 model SysNotice {
-    /// 公告ID
-    id        Int           @id @default(autoincrement())
-    /// 标题
-    title     String        @db.VarChar(50)
-    /// 内容（富文本）
-    content   String        @db.Text
-    /// 类型
-    type      SysNoticeType
-    /// 是否激活
-    isActive  Boolean       @default(true) @map("is_active")
-    /// 创建人
-    createdBy String?       @map("created_by") @db.VarChar(64)
-    /// 创建时间
-    createdAt DateTime      @default(now()) @map("created_at") @db.Timestamp(3)
-    /// 更新人
-    updatedBy String?       @map("updated_by") @db.VarChar(64)
-    /// 更新时间
-    updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamp(3)
-    /// 备注
-    remark    String?       @db.VarChar(500)
+  /// 公告ID
+  id        Int           @id @default(autoincrement())
+  /// 标题
+  title     String        @db.VarChar(50)
+  /// 内容（富文本）
+  content   String        @db.Text
+  /// 类型
+  type      SysNoticeType
+  /// 是否激活
+  isActive  Boolean       @default(true) @map("is_active")
+  /// 创建人
+  createdBy String?       @map("created_by") @db.VarChar(64)
+  /// 创建时间
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamp(3)
+  /// 更新人
+  updatedBy String?       @map("updated_by") @db.VarChar(64)
+  /// 更新时间
+  updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamp(3)
+  /// 备注
+  remark    String?       @db.VarChar(500)
 
-    @@index([title])
-    @@index([type])
-    @@index([isActive])
-    @@map("sys_notice")
+  @@index([title])
+  @@index([type])
+  @@index([isActive])
+  @@map("sys_notice")
 }
 
 /// 通知公告类型
 enum SysNoticeType {
-    /// 通知
-    Notification
-    /// 公告
-    Announcement
+  /// 通知
+  Notification
+  /// 公告
+  Announcement
 }
